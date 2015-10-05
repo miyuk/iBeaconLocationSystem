@@ -50,16 +50,14 @@ public class MainActivity extends AppCompatActivity {
             BluetoothDevice device = result.getDevice();
             for (BluetoothBeaconInfo item : mBtBeaconList) {
                 if (device.getAddress().equals(item.getMacAddress())) {
-                    Log.d(TAG, "update BT beacon: " + device.getAddress() + "(RSSI: " + result.getRssi() + ")");
+                    Log.i(TAG, "update BT beacon: " + device.getAddress() + "(RSSI: " + result.getRssi() + ")");
                     item.update(result.getRssi());
                     return;
                 }
             }
             //if not existing in List
-            Log.d(TAG, "add BT beacon: " + device.getAddress());
-            BluetoothBeaconInfo beacon = new BluetoothBeaconInfo(
-                    device.getName(), device.getUuids(),
-                    device.getAddress(), result.getRssi());
+            Log.i(TAG, "add BT beacon: " + device.getAddress());
+            BluetoothBeaconInfo beacon = new BluetoothBeaconInfo(device.getAddress(), result.getRssi());
             mBtBeaconList.add(beacon);
         }
     };
