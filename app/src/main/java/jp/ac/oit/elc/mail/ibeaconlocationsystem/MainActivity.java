@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private WifiManager mWifiManager;
     private BeaconList<BluetoothBeaconInfo> mBtBeaconList;
     private BeaconList<WifiBeaconInfo> mWifiBeaconList;
-
+    private BluetoothScanCallback mBtScanCallback;
     private List<ScanFilter> mBtFilterList;
     private ScanSettings mBtSettings;
     private WifiReceiver mWifiReceiver;
@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
         mWifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
         mBtBeaconList = new BeaconList<>();
         mWifiBeaconList = new BeaconList<>();
-
+        mBtScanCallback = new BluetoothScanCallback(mBtBeaconList);
         mBtFilterList = new ArrayList<>();
         mBtFilterList.add(new ScanFilter.Builder().build());
         mBtSettings = new ScanSettings.Builder().build();
@@ -59,30 +59,13 @@ public class MainActivity extends AppCompatActivity {
         mButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mWifiManager.startScan();
-                mBtScanner.startScan(mBtFilterList, mBtSettings, scanedBtDevices);
+                //mWifiManager.startScan();
+                Log.d(TAG, "onClick");
+                mBtScanner.startScan(mBtFilterList, mBtSettings, mBtScanCallback);
             }
         });
     }
 
-    private ScanCallback scanedBtDevices = new ScanCallback() {
-        @Override
-        public void onScanResult(int callbackType, ScanResult result) {
-            super.onScanResult(callbackType, result);
-            BluetoothDevice device = result.getDevice();
-            for (BluetoothBeaconInfo item : mBtBeaconList) {
-                if (device.getAddress().equals(item.getMacAddress())) {
-                    Log.i(TAG, "update BT beacon: " + device.getAddress() + "(RSSI: " + result.getRssi() + ")");
-                    item.update(result.getRssi());
-                    return;
-                }
-            }
-            //if not existing in List
-            Log.i(TAG, "add BT beacon: " + device.getAddress());
-            BluetoothBeaconInfo beacon = new BluetoothBeaconInfo(device.getAddress(), result.getRssi());
-            mBtBeaconList.add(beacon);
-        }
-    };
 
 
 }
