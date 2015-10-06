@@ -7,10 +7,16 @@ import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.wifi.WifiManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,11 +27,15 @@ public class MainActivity extends AppCompatActivity {
     private BluetoothAdapter mBtAdapter;
     private BluetoothLeScanner mBtScanner;
     private WifiManager mWifiManager;
-    private List<BluetoothBeaconInfo> mBtBeaconList;
-    private List<WifiBeaconInfo> mWifiBeaconList;
+    private BeaconList<BluetoothBeaconInfo> mBtBeaconList;
+    private BeaconList<WifiBeaconInfo> mWifiBeaconList;
 
     private List<ScanFilter> mBtFilterList;
     private ScanSettings mBtSettings;
+    private WifiReceiver mWifiReceiver;
+    private IntentFilter mWifiFilter;
+
+    private Button mButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,16 +44,27 @@ public class MainActivity extends AppCompatActivity {
         mBtAdapter = BluetoothAdapter.getDefaultAdapter();
         mBtScanner = mBtAdapter.getBluetoothLeScanner();
         mWifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
-        mBtBeaconList = new ArrayList<>();
-        mWifiBeaconList = new ArrayList<>();
+        mBtBeaconList = new BeaconList<>();
+        mWifiBeaconList = new BeaconList<>();
 
         mBtFilterList = new ArrayList<>();
         mBtFilterList.add(new ScanFilter.Builder().build());
         mBtSettings = new ScanSettings.Builder().build();
-        mBtScanner.startScan(mBtFilterList, mBtSettings, scanBtDevice);
+        //mBtScanner.startScan(mBtFilterList, mBtSettings, scanedBtDevices);
+        mWifiReceiver = new WifiReceiver(mWifiManager, mWifiBeaconList);
+        mWifiFilter = new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
+        registerReceiver(mWifiReceiver, mWifiFilter);
+        //mWifiManager.startScan();
+        mButton = (Button)findViewById(R.id.button);
+        mButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mWifiManager.startScan();
+            }
+        });
     }
 
-    private ScanCallback scanBtDevice = new ScanCallback() {
+    private ScanCallback scanedBtDevices = new ScanCallback() {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             super.onScanResult(callbackType, result);
@@ -59,6 +80,12 @@ public class MainActivity extends AppCompatActivity {
             Log.i(TAG, "add BT beacon: " + device.getAddress());
             BluetoothBeaconInfo beacon = new BluetoothBeaconInfo(device.getAddress(), result.getRssi());
             mBtBeaconList.add(beacon);
+        }
+    };
+    private BroadcastReceiver scanedWifiDevices = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
         }
     };
 
