@@ -3,13 +3,13 @@ package jp.ac.oit.elc.mail.ibeaconlocationsystem;
 /**
  * Created by yuuki on 10/6/15.
  */
-public class Sampling {
+public class IntensitySample {
     public int x;
     public int y;
     private BeaconList<BluetoothBeacon> mBtBeaconList;
     private BeaconList<WifiBeacon> mWifiBeaconList;
 
-    public Sampling(int x, int y, BeaconList<BluetoothBeacon> btBeaconList, BeaconList<WifiBeacon> wifiBeaconList) {
+    public IntensitySample(int x, int y, BeaconList<BluetoothBeacon> btBeaconList, BeaconList<WifiBeacon> wifiBeaconList) {
         this.x = x;
         this.y = y;
         mBtBeaconList = btBeaconList;
