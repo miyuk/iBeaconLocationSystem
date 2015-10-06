@@ -1,15 +1,9 @@
 package jp.ac.oit.elc.mail.ibeaconlocationsystem;
 
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.bluetooth.le.BluetoothLeScanner;
-import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanFilter;
-import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.WifiManager;
 import android.support.v7.app.AppCompatActivity;
@@ -27,8 +21,8 @@ public class MainActivity extends AppCompatActivity {
     private BluetoothAdapter mBtAdapter;
     private BluetoothLeScanner mBtScanner;
     private WifiManager mWifiManager;
-    private BeaconList<BluetoothBeaconInfo> mBtBeaconList;
-    private BeaconList<WifiBeaconInfo> mWifiBeaconList;
+    private BeaconList<BluetoothBeacon> mBtBeaconList;
+    private BeaconList<WifiBeacon> mWifiBeaconList;
     private BluetoothScanCallback mBtScanCallback;
     private List<ScanFilter> mBtFilterList;
     private ScanSettings mBtSettings;

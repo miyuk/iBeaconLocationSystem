@@ -3,10 +3,10 @@ package jp.ac.oit.elc.mail.ibeaconlocationsystem;
 /**
  * Created by yuuki on 10/2/15.
  */
-public class WifiBeaconInfo extends BeaconInfo{
+public class WifiBeacon extends BaseBeacon {
 
     private String mSsid;
-    public WifiBeaconInfo(String ssid, String macAddress, int rssi){
+    public WifiBeacon(String ssid, String macAddress, int rssi){
         super(macAddress, rssi);
         mSsid = ssid;
     }

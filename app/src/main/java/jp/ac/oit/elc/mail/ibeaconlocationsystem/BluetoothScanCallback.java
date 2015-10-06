@@ -12,9 +12,9 @@ import java.util.List;
  */
 public class BluetoothScanCallback extends ScanCallback{
     private static final String TAG = "BluetoothScanCallback";
-    private BeaconList<BluetoothBeaconInfo> mBtBeaconList;
+    private BeaconList<BluetoothBeacon> mBtBeaconList;
 
-    public BluetoothScanCallback(BeaconList<BluetoothBeaconInfo> beaconList){
+    public BluetoothScanCallback(BeaconList<BluetoothBeacon> beaconList){
         mBtBeaconList = beaconList;
     }
     @Override
@@ -33,7 +33,7 @@ public class BluetoothScanCallback extends ScanCallback{
     public void onScanResult(int callbackType, ScanResult result) {
         super.onScanResult(callbackType, result);
         BluetoothDevice device = result.getDevice();
-        for (BluetoothBeaconInfo item : mBtBeaconList) {
+        for (BluetoothBeacon item : mBtBeaconList) {
             if (device.getAddress().equals(item.getMacAddress())) {
                 Log.i(TAG, "update BT beacon: " + device.getAddress() + "(RSSI: " + result.getRssi() + ")");
                 item.update(result.getRssi());
@@ -42,7 +42,7 @@ public class BluetoothScanCallback extends ScanCallback{
         }
         //if not existing in List
         Log.i(TAG, "add BT beacon: " + device.getAddress());
-        BluetoothBeaconInfo beacon = new BluetoothBeaconInfo(device.getAddress(), result.getRssi());
+        BluetoothBeacon beacon = new BluetoothBeacon(device.getAddress(), result.getRssi());
         mBtBeaconList.add(beacon);
     }
 }

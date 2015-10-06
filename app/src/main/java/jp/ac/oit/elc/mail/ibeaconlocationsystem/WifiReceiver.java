@@ -3,7 +3,6 @@ package jp.ac.oit.elc.mail.ibeaconlocationsystem;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.util.Log;
@@ -16,9 +15,9 @@ import java.util.List;
 public class WifiReceiver extends BroadcastReceiver {
     private static final String TAG = "WifiReceiver";
     private WifiManager mWifiManager;
-    private BeaconList<WifiBeaconInfo> mWifiBeaconList;
+    private BeaconList<WifiBeacon> mWifiBeaconList;
 
-    public WifiReceiver(WifiManager wifiManager, BeaconList<WifiBeaconInfo> wifiBeaconList) {
+    public WifiReceiver(WifiManager wifiManager, BeaconList<WifiBeacon> wifiBeaconList) {
         super();
         mWifiManager = wifiManager;
         mWifiBeaconList = wifiBeaconList;
@@ -29,7 +28,7 @@ public class WifiReceiver extends BroadcastReceiver {
         Log.d(TAG, "onReceive");
         List<ScanResult> resultList = mWifiManager.getScanResults();
         for (ScanResult result : resultList) {
-            WifiBeaconInfo beacon;
+            WifiBeacon beacon;
             if ((beacon = mWifiBeaconList.getByMacAddress(result.BSSID)) != null) {
                 beacon.update(result.level);
                 Log.i(TAG, "update Wifi beacon: " + result.BSSID + "(" + result.level + ")");
@@ -39,7 +38,7 @@ public class WifiReceiver extends BroadcastReceiver {
                 }
             } else {
                 // if not existing in List
-                beacon = new WifiBeaconInfo(result.SSID, result.BSSID, result.level);
+                beacon = new WifiBeacon(result.SSID, result.BSSID, result.level);
                 mWifiBeaconList.add(beacon);
                 Log.d(TAG, "add WiFi beacon: " + result.BSSID);
             }
