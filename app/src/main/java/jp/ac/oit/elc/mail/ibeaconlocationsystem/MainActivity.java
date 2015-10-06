@@ -60,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 mWifiManager.startScan();
+                mBtScanner.startScan(mBtFilterList, mBtSettings, scanedBtDevices);
             }
         });
     }
@@ -82,11 +83,6 @@ public class MainActivity extends AppCompatActivity {
             mBtBeaconList.add(beacon);
         }
     };
-    private BroadcastReceiver scanedWifiDevices = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
 
-        }
-    };
 
 }

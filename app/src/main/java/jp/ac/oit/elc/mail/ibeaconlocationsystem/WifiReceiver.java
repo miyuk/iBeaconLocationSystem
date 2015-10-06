@@ -46,13 +46,4 @@ public class WifiReceiver extends BroadcastReceiver {
         }
     }
 
-    private WifiBeaconInfo getBeaconInfoByAddress(String macAddress) {
-        for (WifiBeaconInfo item : mWifiBeaconList) {
-            if (item.getMacAddress().equals(macAddress)) {
-                return item;
-            }
-        }
-        // if not existing in List
-        return null;
-    }
 }
