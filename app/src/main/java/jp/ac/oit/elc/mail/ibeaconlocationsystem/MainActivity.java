@@ -1,13 +1,6 @@
 package jp.ac.oit.elc.mail.ibeaconlocationsystem;
 
 import android.app.ProgressDialog;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.le.BluetoothLeScanner;
-import android.bluetooth.le.ScanFilter;
-import android.bluetooth.le.ScanSettings;
-import android.content.Context;
-import android.content.IntentFilter;
-import android.net.wifi.WifiManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,16 +9,14 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private BeaconScanner mBeaconScanner;
 
     private Button mButton;
     private ImageView mImageIntensityMap;
-    private IntensityMap mIntensityMap;
+    private ImageView mImageLocationPin;
+    private IntensityMapView mIntensityMap;
     private ProgressDialog mProgDialog;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,8 +31,8 @@ public class MainActivity extends AppCompatActivity {
                 mBeaconScanner.scan(beaconScanCallback);
             }
         });
-        mIntensityMap = new IntensityMap();
-        mImageIntensityMap = (ImageView) findViewById(R.id.imageIntensityMap);
+        mIntensityMap = (IntensityMapView)findViewById(R.id.intensityMapView);
+        mIntensityMap.setImageResource(R.mipmap.location_pin);
     }
 
     @Override
