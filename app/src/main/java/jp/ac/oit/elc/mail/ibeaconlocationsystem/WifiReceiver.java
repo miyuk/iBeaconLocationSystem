@@ -3,6 +3,7 @@ package jp.ac.oit.elc.mail.ibeaconlocationsystem;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.util.Log;
@@ -16,15 +17,22 @@ public class WifiReceiver extends BroadcastReceiver {
     private static final String TAG = "WifiReceiver";
     private WifiManager mWifiManager;
     private BeaconList<WifiBeacon> mWifiBeaconList;
+    private boolean mIsScanning;
+    private Context mContext;
+    private IntentFilter mWifiFilter;
 
-    public WifiReceiver(WifiManager wifiManager, BeaconList<WifiBeacon> wifiBeaconList) {
+    public WifiReceiver(Context context) {
         super();
-        mWifiManager = wifiManager;
-        mWifiBeaconList = wifiBeaconList;
+        mContext = context;
+        mWifiManager = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
+        mIsScanning = false;
+        mWifiFilter = new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
+
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        if (!mIsScanning) return;
         Log.d(TAG, "onReceive");
         List<ScanResult> resultList = mWifiManager.getScanResults();
         for (ScanResult result : resultList) {
@@ -43,6 +51,25 @@ public class WifiReceiver extends BroadcastReceiver {
                 Log.d(TAG, "add WiFi beacon: " + result.BSSID);
             }
         }
+        //mWifiManager.startScan();
     }
 
+    public void startScan() {
+        mIsScanning = true;
+        mWifiBeaconList = new BeaconList<>();
+        mContext.registerReceiver(this, mWifiFilter);
+        mWifiManager.startScan();
+    }
+
+    public void stopScan() {
+        mContext.unregisterReceiver(this);
+        mIsScanning = false;
+    }
+
+    public BeaconList<WifiBeacon> getBeaconList() {
+        return mWifiBeaconList;
+    }
+    public boolean isScanning(){
+        return mIsScanning;
+    }
 }

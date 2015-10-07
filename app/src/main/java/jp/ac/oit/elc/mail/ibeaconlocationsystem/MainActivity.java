@@ -1,9 +1,11 @@
 package jp.ac.oit.elc.mail.ibeaconlocationsystem;
 
+import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanSettings;
+import android.content.Context;
 import android.content.IntentFilter;
 import android.net.wifi.WifiManager;
 import android.support.v7.app.AppCompatActivity;
@@ -11,55 +13,70 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-
     private static final String TAG = "MainActivity";
-    private BluetoothAdapter mBtAdapter;
-    private BluetoothLeScanner mBtScanner;
-    private WifiManager mWifiManager;
-    private BeaconList<BluetoothBeacon> mBtBeaconList;
-    private BeaconList<WifiBeacon> mWifiBeaconList;
-    private BluetoothScanCallback mBtScanCallback;
-    private List<ScanFilter> mBtFilterList;
-    private ScanSettings mBtSettings;
-    private WifiReceiver mWifiReceiver;
-    private IntentFilter mWifiFilter;
+    private BeaconScanner mBeaconScanner;
 
     private Button mButton;
-
+    private ImageView mImageIntensityMap;
+    private IntensityMap mIntensityMap;
+    private ProgressDialog mProgDialog;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mBtAdapter = BluetoothAdapter.getDefaultAdapter();
-        mBtScanner = mBtAdapter.getBluetoothLeScanner();
-        mWifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
-        mBtBeaconList = new BeaconList<>();
-        mWifiBeaconList = new BeaconList<>();
-        mBtScanCallback = new BluetoothScanCallback(mBtBeaconList);
-        mBtFilterList = new ArrayList<>();
-        mBtFilterList.add(new ScanFilter.Builder().build());
-        mBtSettings = new ScanSettings.Builder().build();
-        //mBtScanner.startScan(mBtFilterList, mBtSettings, scanedBtDevices);
-        mWifiReceiver = new WifiReceiver(mWifiManager, mWifiBeaconList);
-        mWifiFilter = new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
-        registerReceiver(mWifiReceiver, mWifiFilter);
-        //mWifiManager.startScan();
-        mButton = (Button)findViewById(R.id.button);
+        mBeaconScanner = new BeaconScanner(this);
+        mButton = (Button) findViewById(R.id.button);
         mButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //mWifiManager.startScan();
                 Log.d(TAG, "onClick");
-                mBtScanner.startScan(mBtFilterList, mBtSettings, mBtScanCallback);
+                mBeaconScanner.scan(beaconScanCallback);
             }
         });
+        mIntensityMap = new IntensityMap();
+        mImageIntensityMap = (ImageView) findViewById(R.id.imageIntensityMap);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
+    private BeaconScanCallback beaconScanCallback = new BeaconScanCallback() {
+        @Override
+        public void onStartScan() {
+            mProgDialog = new ProgressDialog(MainActivity.this);
+            mProgDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            mProgDialog.setMessage("Now Scanning");
+            mProgDialog.setCanceledOnTouchOutside(false);
+            mProgDialog.setCancelable(true);
+            mProgDialog.show();
+        }
+
+        @Override
+        public void onScanned(BeaconList<BluetoothBeacon> btBeaconList, BeaconList<WifiBeacon> wifiBeaconList) {
+            mProgDialog.dismiss();
+            int beaconNum = btBeaconList.size() + wifiBeaconList.size();
+            Toast.makeText(MainActivity.this, String.format("Scan Complete: BT(%d), Wifi(%d)", btBeaconList.size(), wifiBeaconList.size()), Toast.LENGTH_SHORT).show();
+            mIntensityMap.sample(0, 1, btBeaconList, wifiBeaconList);
+        }
+
+        @Override
+        public void onScanFailed() {
+            Log.e(TAG, "error scan");
+        }
+    };
 
 }
