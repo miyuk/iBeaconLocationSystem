@@ -1,4 +1,6 @@
-package jp.ac.oit.elc.mail.ibeaconlocationsystem;
+package jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi;
+
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.BaseBeacon;
 
 /**
  * Created by yuuki on 10/2/15.

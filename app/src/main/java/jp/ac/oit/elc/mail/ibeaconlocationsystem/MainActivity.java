@@ -1,6 +1,5 @@
 package jp.ac.oit.elc.mail.ibeaconlocationsystem;
 
-import android.app.ActionBar;
 import android.app.ProgressDialog;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
@@ -14,6 +13,9 @@ import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothBeacon;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -34,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
         setView();
         mBeaconScanner = new BeaconScanner(this);
 
-        mIntensityMap.setImageResource(R.mipmap.location_pin);
+        mIntensityMap.setImageResource(R.mipmap.floor_map);
     }
 
     private void setView() {
@@ -47,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
         mButtonStartStop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mBeaconScanner.scan(beaconScanCallback);
                 //TODO: Set the walking route
             }
         });

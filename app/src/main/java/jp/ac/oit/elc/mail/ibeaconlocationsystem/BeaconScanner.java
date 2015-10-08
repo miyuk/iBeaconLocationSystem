@@ -2,18 +2,15 @@ package jp.ac.oit.elc.mail.ibeaconlocationsystem;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.le.BluetoothLeScanner;
-import android.bluetooth.le.ScanFilter;
-import android.bluetooth.le.ScanSettings;
 import android.content.Context;
-import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
-import android.telecom.Call;
-import android.util.Log;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.security.auth.callback.Callback;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.BeaconList;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.BeaconScanCallback;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothBeacon;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothScanCallback;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiReceiver;
 
 /**
  * Created by yuuki on 10/6/15.

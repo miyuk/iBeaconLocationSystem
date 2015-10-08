@@ -1,4 +1,4 @@
-package jp.ac.oit.elc.mail.ibeaconlocationsystem;
+package jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -9,6 +9,9 @@ import android.net.wifi.WifiManager;
 import android.util.Log;
 
 import java.util.List;
+
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.BeaconList;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;
 
 /**
  * Created by yuuki on 10/5/15.

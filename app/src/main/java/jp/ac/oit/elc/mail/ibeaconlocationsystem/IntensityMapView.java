@@ -1,15 +1,14 @@
 package jp.ac.oit.elc.mail.ibeaconlocationsystem;
 
 import android.content.Context;
-import android.content.IntentFilter;
-import android.graphics.Bitmap;
-import android.media.Image;
 import android.util.AttributeSet;
-import android.view.View;
 import android.widget.ImageView;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothBeacon;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;
 
 /**
  * Created by yuuki on 10/6/15.

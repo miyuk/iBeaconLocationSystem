@@ -1,7 +1,6 @@
-package jp.ac.oit.elc.mail.ibeaconlocationsystem;
+package jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth;
 
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanFilter;
@@ -11,6 +10,9 @@ import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.BeaconList;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothBeacon;
 
 /**
  * Created by yuuki on 10/6/15.
