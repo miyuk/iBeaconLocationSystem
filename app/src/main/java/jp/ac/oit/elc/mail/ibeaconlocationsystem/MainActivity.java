@@ -1,7 +1,6 @@
 package jp.ac.oit.elc.mail.ibeaconlocationsystem;
 
 import android.app.ProgressDialog;
-import android.graphics.Point;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -29,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
     private ImageView mImageLocationPin;
     private IntensityMapView mIntensityMap;
     private ProgressDialog mProgDialog;
-    private Point mPinPoint;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,7 +69,6 @@ public class MainActivity extends AppCompatActivity {
             Handler handler;
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                mPinPoint = new Point((int)event.getX(), (int)event.getY());
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
                         handler = new Handler();
@@ -124,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
             mProgDialog.dismiss();
             int beaconNum = btBeaconList.size() + wifiBeaconList.size();
             Toast.makeText(MainActivity.this, String.format("Scan Complete: BT(%d), Wifi(%d)", btBeaconList.size(), wifiBeaconList.size()), Toast.LENGTH_SHORT).show();
-            mIntensityMap.sample(mPinPoint.x, mPinPoint.y, btBeaconList, wifiBeaconList);
+            mIntensityMap.sample(0, 1, btBeaconList, wifiBeaconList);
         }
 
         @Override

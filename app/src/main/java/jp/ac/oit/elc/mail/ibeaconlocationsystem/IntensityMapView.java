@@ -1,13 +1,7 @@
 package jp.ac.oit.elc.mail.ibeaconlocationsystem;
 
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Path;
-import android.media.Image;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.widget.ImageView;
 
 import java.util.ArrayList;
@@ -23,8 +17,7 @@ public class IntensityMapView extends ImageView{
     public static final String TAG = "IntensityMap";
     private Context mContext;
     private List<IntensitySample> mSamplingList;
-    private List<Path> mPathList;
-    private Paint mPaint;
+
     public IntensityMapView(Context context) {
         super(context);
         mContext = context;
@@ -43,30 +36,12 @@ public class IntensityMapView extends ImageView{
         super(context, attrs, defStyleAttr, defStyleRes);
         mContext = context;
         mSamplingList = new ArrayList<>();
-        mPathList = new ArrayList<>();
-        mPaint = new Paint();
-        mPaint.setColor(Color.CYAN);
-        mPaint.setStyle(Paint.Style.FILL);
-        mPaint.setAlpha(50);
     }
 
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        for(Path path : mPathList){
-            canvas.drawPath(path, mPaint);
-        }
-        Log.d(TAG, "canvas");
-    }
 
     public void sample(int x, int y, BeaconList<BluetoothBeacon> btBeaconList, BeaconList<WifiBeacon> wifiBeaconList) {
         IntensitySample sampling = new IntensitySample(x, y, btBeaconList, wifiBeaconList);
         mSamplingList.add(sampling);
-        Canvas canvas = new Canvas();
-        Path path = new Path();
-        path.addCircle(x, y, 100, Path.Direction.CW);
-        mPathList.add(path);
-        invalidate();
     }
 
 }
