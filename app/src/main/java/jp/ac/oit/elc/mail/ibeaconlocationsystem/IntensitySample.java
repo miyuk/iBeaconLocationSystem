@@ -19,10 +19,11 @@ public class IntensitySample {
         mWifiBeaconList = wifiBeaconList;
     }
 
-    public BeaconList<BluetoothBeacon> getBtBeaconList(){
+    public BeaconList<BluetoothBeacon> getBtBeaconList() {
         return mBtBeaconList;
     }
-    public BeaconList<WifiBeacon> getWifiBeaconList(){
+
+    public BeaconList<WifiBeacon> getWifiBeaconList() {
         return mWifiBeaconList;
     }
 }

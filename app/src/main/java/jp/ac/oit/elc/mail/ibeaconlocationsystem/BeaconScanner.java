@@ -5,8 +5,6 @@ import android.bluetooth.le.BluetoothLeScanner;
 import android.content.Context;
 import android.os.AsyncTask;
 
-import jp.ac.oit.elc.mail.ibeaconlocationsystem.BeaconList;
-import jp.ac.oit.elc.mail.ibeaconlocationsystem.BeaconScanCallback;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothBeacon;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothScanCallback;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;

@@ -2,9 +2,9 @@ package jp.ac.oit.elc.mail.ibeaconlocationsystem;
 
 import android.app.ProgressDialog;
 import android.graphics.Point;
+import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -30,13 +30,13 @@ public class MainActivity extends AppCompatActivity {
     private IntensityMapView mIntensityMap;
     private ProgressDialog mProgDialog;
     private Point mPinPoint;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setView();
         mBeaconScanner = new BeaconScanner(this);
-
         mIntensityMap.setImageResource(R.mipmap.floor_map);
     }
 
@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
         mCheckLock = (CheckBox) findViewById(R.id.checkLock);
         mTextStatus = (TextView) findViewById(R.id.textStatus);
         mIntensityMap = (IntensityMapView) findViewById(R.id.intensityMapView);
-        mImageLocationPin = (ImageView)findViewById(R.id.imageLocationPin);
+        mImageLocationPin = (ImageView) findViewById(R.id.imageLocationPin);
         mButtonStartStop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -68,9 +68,10 @@ public class MainActivity extends AppCompatActivity {
         });
         mIntensityMap.setOnTouchListener(new View.OnTouchListener() {
             Handler handler;
+
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                mPinPoint = new Point((int)event.getX(), (int)event.getY());
+                mPinPoint = new Point((int) event.getX(), (int) event.getY());
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
                         handler = new Handler();
@@ -82,18 +83,19 @@ public class MainActivity extends AppCompatActivity {
                             public void run() {
                                 mTextStatus.setText(String.format("Long Touch (%.0f, %.0f)", x, y));
                                 mImageLocationPin.setX(x - mImageLocationPin.getWidth() / 2);
-                                mImageLocationPin.setY(y- mImageLocationPin.getHeight());
+                                mImageLocationPin.setY(y - mImageLocationPin.getHeight());
                                 mImageLocationPin.setVisibility(View.VISIBLE);
                             }
                         }, 1000);
-                        return true;
+                        return false;
                     case MotionEvent.ACTION_UP:
                         Log.d(TAG, "up");
                         handler.removeCallbacksAndMessages(null);
-                        return true;
+                        return false;
                     default:
-                        return true;
-                }            }
+                        return false;
+                }
+            }
         });
 
     }

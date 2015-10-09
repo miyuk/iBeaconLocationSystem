@@ -5,28 +5,28 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.media.Image;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.widget.ImageView;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import it.sephiroth.android.library.imagezoom.ImageViewTouch;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothBeacon;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;
 
 /**
  * Created by yuuki on 10/6/15.
  */
-public class IntensityMapView extends ImageView{
+public class IntensityMapView extends ImageViewTouch {
     public static final String TAG = "IntensityMap";
     private Context mContext;
     private List<IntensitySample> mSamplingList;
     private List<Path> mPathList;
     private Paint mPaint;
+
     public IntensityMapView(Context context) {
-        super(context);
+        super(context, null);
         mContext = context;
         mSamplingList = new ArrayList<>();
     }
@@ -36,11 +36,7 @@ public class IntensityMapView extends ImageView{
     }
 
     public IntensityMapView(Context context, AttributeSet attrs, int defStyleAttr) {
-        this(context, attrs, defStyleAttr, 0);
-    }
-
-    public IntensityMapView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
+        super(context, attrs, defStyleAttr);
         mContext = context;
         mSamplingList = new ArrayList<>();
         mPathList = new ArrayList<>();
@@ -50,10 +46,11 @@ public class IntensityMapView extends ImageView{
         mPaint.setAlpha(50);
     }
 
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        for(Path path : mPathList){
+        for (Path path : mPathList) {
             canvas.drawPath(path, mPaint);
         }
         Log.d(TAG, "canvas");
