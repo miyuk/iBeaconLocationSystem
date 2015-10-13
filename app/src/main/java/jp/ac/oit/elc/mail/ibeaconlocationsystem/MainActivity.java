@@ -1,9 +1,7 @@
 package jp.ac.oit.elc.mail.ibeaconlocationsystem;
 
 import android.app.ProgressDialog;
-import android.graphics.Point;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -24,12 +22,11 @@ public class MainActivity extends AppCompatActivity {
     private BeaconScanner mBeaconScanner;
     private Button mButtonStartStop;
     private Button mButtonStep;
-    private CheckBox mCheckLock;
+    private CheckBox mCheckBoxLockMap;
     private TextView mTextStatus;
     private ImageView mImageLocationPin;
     private IntensityMapView mIntensityMap;
     private ProgressDialog mProgDialog;
-    private Point mPinPoint;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,10 +40,9 @@ public class MainActivity extends AppCompatActivity {
     private void setView() {
         mButtonStartStop = (Button) findViewById(R.id.buttonStartStop);
         mButtonStep = (Button) findViewById(R.id.buttonStep);
-        mCheckLock = (CheckBox) findViewById(R.id.checkLock);
+        mCheckBoxLockMap = (CheckBox) findViewById(R.id.checkLock);
         mTextStatus = (TextView) findViewById(R.id.textStatus);
         mIntensityMap = (IntensityMapView) findViewById(R.id.intensityMapView);
-        mImageLocationPin = (ImageView) findViewById(R.id.imageLocationPin);
         mButtonStartStop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -54,52 +50,32 @@ public class MainActivity extends AppCompatActivity {
                 //TODO: Set the walking route
             }
         });
-        mButtonStep.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // TODO: Step and Correct data
-            }
-        });
-        mCheckLock.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                // TODO: if true, lock the map
-            }
-        });
-        mIntensityMap.setOnTouchListener(new View.OnTouchListener() {
-            Handler handler;
-
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                mPinPoint = new Point((int) event.getX(), (int) event.getY());
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        handler = new Handler();
-                        Log.d(TAG, "down");
-                        final float x = event.getX();
-                        final float y = event.getY();
-                        handler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                mTextStatus.setText(String.format("Long Touch (%.0f, %.0f)", x, y));
-                                mImageLocationPin.setX(x - mImageLocationPin.getWidth() / 2);
-                                mImageLocationPin.setY(y - mImageLocationPin.getHeight());
-                                mImageLocationPin.setVisibility(View.VISIBLE);
-                            }
-                        }, 1000);
-                        return false;
-                    case MotionEvent.ACTION_UP:
-                        Log.d(TAG, "up");
-                        handler.removeCallbacksAndMessages(null);
-                        return false;
-                    default:
-                        return false;
-                }
-            }
-        });
-
+        mCheckBoxLockMap.setOnCheckedChangeListener(mLockMapToggleChanged);
+        mIntensityMap.setOnTouchListener(mMapTouchListener);
     }
 
+    private View.OnTouchListener mMapTouchListener = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            if (!mCheckBoxLockMap.isChecked()) {
+                return false;
+            }
+            mIntensityMap.setPinPosition(event.getX(), event.getY());
+            return false;
+//            switch (event.getAction()) {
+//                case MotionEvent.ACTION_DOWN:
+//                    setPinPosition(event.getX(), event.getY());
+//                case MotionEvent.ACTION_MOVE:
+//                case MotionEvent.ACTION_UP:
+//                    //setPinPosition(event.getX(), event.getY());
+//                    invalidate();
+//                    return false;
+//                case MotionEvent.ACTION_CANCEL:
+//                default:
+//                    return true;
+//            }
+        }
+    };
     @Override
     protected void onResume() {
         super.onResume();
@@ -126,13 +102,21 @@ public class MainActivity extends AppCompatActivity {
             mProgDialog.dismiss();
             int beaconNum = btBeaconList.size() + wifiBeaconList.size();
             Toast.makeText(MainActivity.this, String.format("Scan Complete: BT(%d), Wifi(%d)", btBeaconList.size(), wifiBeaconList.size()), Toast.LENGTH_SHORT).show();
-            mIntensityMap.sample(mPinPoint.x, mPinPoint.y, btBeaconList, wifiBeaconList);
+            mIntensityMap.sample(btBeaconList, wifiBeaconList);
         }
-
         @Override
         public void onScanFailed() {
             Log.e(TAG, "error scan");
         }
     };
 
+    private CompoundButton.OnCheckedChangeListener mLockMapToggleChanged = new CompoundButton.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            mIntensityMap.setScaleEnabled(!isChecked);
+            mIntensityMap.setScrollEnabled(!isChecked);
+            mIntensityMap.setDoubleTapEnabled(!isChecked);
+        }
+    };
 }
+

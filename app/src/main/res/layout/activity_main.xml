@@ -6,29 +6,15 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainActivity">
 
-    <FrameLayout
-        android:layout_alignParentStart="true"
-        android:layout_width="500dp"
-        android:layout_height="400dp"
-        android:id="@+id/mapFrame">
-
-        <jp.ac.oit.elc.mail.ibeaconlocationsystem.IntensityMapView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/intensityMapView" />
-        <ImageView
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:id="@+id/imageLocationPin"
-            android:src="@mipmap/location_pin"
-            android:visibility="gone" />
-    </FrameLayout>
-
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@+id/mapFrame">
+        android:layout_height="match_parent">
+
+        <jp.ac.oit.elc.mail.ibeaconlocationsystem.IntensityMapView
+            android:layout_width="match_parent"
+            android:layout_height="400dp"
+            android:id="@+id/intensityMapView" />
 
         <LinearLayout
             android:orientation="horizontal"
@@ -75,6 +61,7 @@
             android:layout_alignParentBottom="true"
             android:layout_weight="1"
             android:gravity="center_vertical" />
+
     </LinearLayout>
 
 
