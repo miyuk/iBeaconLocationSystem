@@ -1,11 +1,18 @@
-package jp.ac.oit.elc.mail.ibeaconlocationsystem;
+package jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth;
 
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
+import android.bluetooth.le.ScanSettings;
 import android.util.Log;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.BeaconList;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothBeacon;
 
 /**
  * Created by yuuki on 10/6/15.
@@ -13,9 +20,30 @@ import java.util.List;
 public class BluetoothScanCallback extends ScanCallback{
     private static final String TAG = "BluetoothScanCallback";
     private BeaconList<BluetoothBeacon> mBtBeaconList;
+    private BluetoothLeScanner mBtScanner;
+    private List<ScanFilter> mBtFilterList;
+    private ScanSettings mBtSettings;
+    private boolean mIsScannning;
+    public BluetoothScanCallback(BluetoothLeScanner btScanner){
+        mBtScanner = btScanner;
+        mIsScannning = false;
+        mBtFilterList = new ArrayList<>();
+        mBtFilterList.add(new ScanFilter.Builder().build());
+        mBtSettings = new ScanSettings.Builder().build();
+    }
 
-    public BluetoothScanCallback(BeaconList<BluetoothBeacon> beaconList){
-        mBtBeaconList = beaconList;
+    public void startScan(){
+        mIsScannning = true;
+        mBtBeaconList = new BeaconList<>();
+        mBtScanner.startScan(mBtFilterList, mBtSettings, this);
+    }
+
+    public void stopScan(){
+        mBtScanner.stopScan(this);
+        mIsScannning = false;
+    }
+    public BeaconList<BluetoothBeacon> getBeaconList(){
+        return mBtBeaconList;
     }
     @Override
     public void onScanFailed(int errorCode) {
