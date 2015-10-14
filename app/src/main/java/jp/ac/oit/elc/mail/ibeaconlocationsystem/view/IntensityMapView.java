@@ -1,4 +1,4 @@
-package jp.ac.oit.elc.mail.ibeaconlocationsystem;
+package jp.ac.oit.elc.mail.ibeaconlocationsystem.view;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -20,6 +20,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import it.sephiroth.android.library.imagezoom.ImageViewTouch;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.BeaconList;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.IntensitySample;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.R;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothBeacon;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.utils.CoordinateUtils;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;
@@ -29,8 +32,8 @@ import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;
  */
 public class IntensityMapView extends ImageViewTouch {
     private static final String TAG = "IntensityMap";
-    private static final float SCAN_POINT_EXPECTED_RANGE = 100.0F;
-    private static final float SCAN_POINT_CENTER_RADIUS = 10.0F;
+    private static final float SCAN_POINT_CENTER_RADIUS = 1.0F;
+    private static final float SCAN_POINT_EXPECTED_RANGE = SCAN_POINT_CENTER_RADIUS * 8;
     private Paint mExpectedRangePaint;
     private Paint mPointCenterPaint;
     private Context mContext;
@@ -40,8 +43,14 @@ public class IntensityMapView extends ImageViewTouch {
     private PointF mPinOffset;
     private Bitmap mPinBmp;
     private Bitmap mMapBmp;
-    private boolean mLocksMap;
 
+    @Override
+    public void onWindowFocusChanged(boolean hasWindowFocus) {
+        super.onWindowFocusChanged(hasWindowFocus);
+        if (mPinPosition.equals(0, 0)) {
+            mPinPosition.set(getCenter().x, getCenter().y);
+        }
+    }
 
     public IntensityMapView(Context context) {
         this(context, null);
@@ -90,11 +99,18 @@ public class IntensityMapView extends ImageViewTouch {
 
     public void sample(BeaconList<BluetoothBeacon> btBeaconList, BeaconList<WifiBeacon> wifiBeaconList) {
         PointF point = CoordinateUtils.screenToClientPoint(mPinPosition.x, mPinPosition.y, getImageViewMatrix());
-        IntensitySample sample = new IntensitySample((int) point.x, (int) point.y, btBeaconList, wifiBeaconList);
-        mSampleList.add(sample);
+        IntensitySample sample = new IntensitySample(point.x, point.y, btBeaconList, wifiBeaconList);
+        sample(sample);
         invalidate();
     }
 
+    public void sample(IntensitySample sample) {
+        mSampleList.add(sample);
+        invalidate();
+    }
+    public List<IntensitySample> getSampleList(){
+        return mSampleList;
+    }
 }
 
 
