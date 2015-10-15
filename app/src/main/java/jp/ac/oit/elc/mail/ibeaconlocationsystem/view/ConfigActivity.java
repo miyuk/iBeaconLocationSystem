@@ -80,7 +80,7 @@ public class ConfigActivity extends AppCompatActivity {
             BufferedWriter writer = new BufferedWriter(new FileWriter(file, false));
             for (IntensitySample sample : mIntensityMap.getSampleList()) {
                 StringBuffer buffer = new StringBuffer();
-                buffer.append(String.format("%f,%f", sample.x, sample.y));
+                buffer.append(String.format("%d,%d", sample.x, sample.y));
                 for (BluetoothBeacon beacon : sample.getBtBeaconList()) {
                     buffer.append(String.format(",%s,%d", beacon.getMacAddress(), beacon.getRssi()));
                 }
@@ -122,7 +122,7 @@ public class ConfigActivity extends AppCompatActivity {
             if (!mToggleLockMap.isChecked()) {
                 return false;
             }
-            mIntensityMap.setPinPosition(event.getX(), event.getY());
+            mIntensityMap.setPinPosition((int)event.getX(), (int)event.getY());
             return false;
         }
     };
