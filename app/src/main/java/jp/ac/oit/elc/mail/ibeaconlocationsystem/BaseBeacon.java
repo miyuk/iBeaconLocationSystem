@@ -5,7 +5,7 @@ import java.util.Date;
 /**
  * Created by yuuki on 10/2/15.
  */
-abstract public class BaseBeacon {
+public abstract class BaseBeacon {
     protected String mMacAddress;
     protected int mRssi;
     protected Date mLastUpdateTime;

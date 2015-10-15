@@ -16,7 +16,6 @@ import android.widget.Toast;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.io.OutputStream;
 
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.BeaconList;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.BeaconScanCallback;
@@ -27,7 +26,7 @@ import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothBeacon;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;
 
 
-public class MainActivity extends AppCompatActivity {
+public class ConfigActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private static final String INTENSITY_MAP_FILE = "/local/intensity_map.csv";
     private BeaconScanner mBeaconScanner;
@@ -43,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_config);
         initViews();
         mBeaconScanner = new BeaconScanner(this);
 //        mMidSampleList = new ArrayList<>();
@@ -81,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
             BufferedWriter writer = new BufferedWriter(new FileWriter(file, false));
             for (IntensitySample sample : mIntensityMap.getSampleList()) {
                 StringBuffer buffer = new StringBuffer();
-                buffer.append(String.format("%f,%f", sample.x, sample.y));
+                buffer.append(String.format("%d,%d", sample.x, sample.y));
                 for (BluetoothBeacon beacon : sample.getBtBeaconList()) {
                     buffer.append(String.format(",%s,%d", beacon.getMacAddress(), beacon.getRssi()));
                 }
@@ -123,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
             if (!mToggleLockMap.isChecked()) {
                 return false;
             }
-            mIntensityMap.setPinPosition(event.getX(), event.getY());
+            mIntensityMap.setPinPosition((int)event.getX(), (int)event.getY());
             return false;
         }
     };
@@ -131,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
     private BeaconScanCallback beaconScanCallback = new BeaconScanCallback() {
         @Override
         public void onStartScan() {
-            mProgDialog = new ProgressDialog(MainActivity.this);
+            mProgDialog = new ProgressDialog(ConfigActivity.this);
             mProgDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
             mProgDialog.setMessage("Now Scanning");
             mProgDialog.setCanceledOnTouchOutside(false);
@@ -142,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onScanned(BeaconList<BluetoothBeacon> btBeaconList, BeaconList<WifiBeacon> wifiBeaconList) {
             mProgDialog.dismiss();
-            Toast.makeText(MainActivity.this, String.format("Scan Complete: BT(%d), Wifi(%d)", btBeaconList.size(), wifiBeaconList.size()), Toast.LENGTH_SHORT).show();
+            Toast.makeText(ConfigActivity.this, String.format("Scan Complete: BT(%d), Wifi(%d)", btBeaconList.size(), wifiBeaconList.size()), Toast.LENGTH_SHORT).show();
             mIntensityMap.sample(btBeaconList, wifiBeaconList);
             mButtonStep.setEnabled(true);
         }

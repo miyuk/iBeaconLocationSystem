@@ -5,16 +5,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.graphics.Path;
-import android.graphics.PointF;
-import android.graphics.RectF;
+import android.graphics.Point;
 import android.util.AttributeSet;
-import android.util.Log;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.inputmethod.CorrectionInfo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,9 +31,9 @@ public class IntensityMapView extends ImageViewTouch {
     private Paint mPointCenterPaint;
     private Context mContext;
     private List<IntensitySample> mSampleList;
-    private PointF mPinPosition;
-    private PointF mUserPosition;
-    private PointF mPinOffset;
+    private Point mPinPosition;
+    private Point mUserPosition;
+    private Point mPinOffset;
     private Bitmap mPinBmp;
     private Bitmap mMapBmp;
 
@@ -48,7 +41,7 @@ public class IntensityMapView extends ImageViewTouch {
     public void onWindowFocusChanged(boolean hasWindowFocus) {
         super.onWindowFocusChanged(hasWindowFocus);
         if (mPinPosition.equals(0, 0)) {
-            mPinPosition.set(getCenter().x, getCenter().y);
+            mPinPosition.set((int) getCenter().x, (int) getCenter().y);
         }
     }
 
@@ -67,10 +60,10 @@ public class IntensityMapView extends ImageViewTouch {
         mSampleList = new ArrayList<>();
         mPinBmp = BitmapFactory.decodeResource(getResources(), R.mipmap.location_pin);
         mMapBmp = BitmapFactory.decodeResource(getResources(), R.mipmap.floor_map);
-        mPinPosition = new PointF();
+        mPinPosition = new Point();
         //tip of pin is center of bottom
-        mPinOffset = new PointF(-mPinBmp.getWidth() / 2.0F, -mPinBmp.getHeight());
-        mUserPosition = new PointF();
+        mPinOffset = new Point(-mPinBmp.getWidth() / 2, -mPinBmp.getHeight());
+        mUserPosition = new Point();
         mExpectedRangePaint = new Paint();
         mExpectedRangePaint.setARGB(50, 0, 255, 255);
         mExpectedRangePaint.setStyle(Paint.Style.FILL);
@@ -86,19 +79,19 @@ public class IntensityMapView extends ImageViewTouch {
         canvas.drawBitmap(mPinBmp, mPinPosition.x + mPinOffset.x, mPinPosition.y + mPinOffset.y, null);
         //draw sample list
         for (IntensitySample sample : mSampleList) {
-            PointF point = CoordinateUtils.clientToScreenPoint(sample.x, sample.y, getImageViewMatrix());
+            Point point = CoordinateUtils.clientToScreenPoint(sample.x, sample.y, getImageViewMatrix());
             canvas.drawCircle(point.x, point.y, SCAN_POINT_EXPECTED_RANGE * getScale(), mExpectedRangePaint);
             canvas.drawCircle(point.x, point.y, SCAN_POINT_CENTER_RADIUS * getScale(), mPointCenterPaint);
         }
     }
 
-    public void setPinPosition(float x, float y) {
+    public void setPinPosition(int x, int y) {
         mPinPosition.set(x, y);
         invalidate();
     }
 
     public void sample(BeaconList<BluetoothBeacon> btBeaconList, BeaconList<WifiBeacon> wifiBeaconList) {
-        PointF point = CoordinateUtils.screenToClientPoint(mPinPosition.x, mPinPosition.y, getImageViewMatrix());
+        Point point = CoordinateUtils.screenToClientPoint(mPinPosition.x, mPinPosition.y, getImageViewMatrix());
         IntensitySample sample = new IntensitySample(point.x, point.y, btBeaconList, wifiBeaconList);
         sample(sample);
         invalidate();
@@ -108,7 +101,8 @@ public class IntensityMapView extends ImageViewTouch {
         mSampleList.add(sample);
         invalidate();
     }
-    public List<IntensitySample> getSampleList(){
+
+    public List<IntensitySample> getSampleList() {
         return mSampleList;
     }
 }
