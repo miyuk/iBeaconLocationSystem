@@ -24,7 +24,7 @@ import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;
  * Created by yuuki on 10/6/15.
  */
 public class IntensityMapView extends ImageViewTouch {
-    private static final String TAG = "IntensityMap";
+    private static final String TAG = IntensityMapView.class.getSimpleName();
     private static final float SCAN_POINT_CENTER_RADIUS = 1.0F;
     private static final float SCAN_POINT_EXPECTED_RANGE = SCAN_POINT_CENTER_RADIUS * 8;
     private Paint mExpectedRangePaint;
@@ -86,6 +86,11 @@ public class IntensityMapView extends ImageViewTouch {
     }
 
     public void setPinPosition(int x, int y) {
+        mPinPosition.set(x, y);
+        invalidate();
+    }
+
+    public void setUserPosition(int x, int y) {
         mPinPosition.set(x, y);
         invalidate();
     }
