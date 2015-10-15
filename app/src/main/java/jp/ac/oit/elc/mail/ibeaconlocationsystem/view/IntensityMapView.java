@@ -5,16 +5,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.graphics.PointF;
-import android.graphics.RectF;
 import android.util.AttributeSet;
-import android.util.Log;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.inputmethod.CorrectionInfo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -99,7 +92,7 @@ public class IntensityMapView extends ImageViewTouch {
 
     public void sample(BeaconList<BluetoothBeacon> btBeaconList, BeaconList<WifiBeacon> wifiBeaconList) {
         PointF point = CoordinateUtils.screenToClientPoint(mPinPosition.x, mPinPosition.y, getImageViewMatrix());
-        IntensitySample sample = new IntensitySample(point.x, point.y, btBeaconList, wifiBeaconList);
+        IntensitySample sample = new IntensitySample((int)point.x, (int)point.y, btBeaconList, wifiBeaconList);
         sample(sample);
         invalidate();
     }
