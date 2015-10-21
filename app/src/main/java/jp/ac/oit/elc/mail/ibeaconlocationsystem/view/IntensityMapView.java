@@ -14,7 +14,7 @@ import java.util.List;
 
 import it.sephiroth.android.library.imagezoom.ImageViewTouch;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.BeaconList;
-import jp.ac.oit.elc.mail.ibeaconlocationsystem.IntensitySample;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.Sample;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.R;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothBeacon;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.utils.CoordinateUtils;
@@ -30,7 +30,7 @@ public class IntensityMapView extends ImageViewTouch {
     private Paint mExpectedRangePaint;
     private Paint mPointCenterPaint;
     private Context mContext;
-    private List<IntensitySample> mSampleList;
+    private List<Sample> mSampleList;
     private Point mPinPosition;
     private Point mUserPosition;
     private Point mPinOffset;
@@ -78,7 +78,7 @@ public class IntensityMapView extends ImageViewTouch {
         // draw pin
         canvas.drawBitmap(mPinBmp, mPinPosition.x + mPinOffset.x, mPinPosition.y + mPinOffset.y, null);
         //draw sample list
-        for (IntensitySample sample : mSampleList) {
+        for (Sample sample : mSampleList) {
             Point point = CoordinateUtils.clientToScreenPoint(sample.x, sample.y, getImageViewMatrix());
             canvas.drawCircle(point.x, point.y, SCAN_POINT_EXPECTED_RANGE * getScale(), mExpectedRangePaint);
             canvas.drawCircle(point.x, point.y, SCAN_POINT_CENTER_RADIUS * getScale(), mPointCenterPaint);
@@ -97,17 +97,17 @@ public class IntensityMapView extends ImageViewTouch {
 
     public void sample(BeaconList<BluetoothBeacon> btBeaconList, BeaconList<WifiBeacon> wifiBeaconList) {
         Point point = CoordinateUtils.screenToClientPoint(mPinPosition.x, mPinPosition.y, getImageViewMatrix());
-        IntensitySample sample = new IntensitySample(point.x, point.y, btBeaconList, wifiBeaconList);
+        Sample sample = new Sample(point.x, point.y, btBeaconList, wifiBeaconList);
         sample(sample);
         invalidate();
     }
 
-    public void sample(IntensitySample sample) {
+    public void sample(Sample sample) {
         mSampleList.add(sample);
         invalidate();
     }
 
-    public List<IntensitySample> getSampleList() {
+    public List<Sample> getSampleList() {
         return mSampleList;
     }
 }

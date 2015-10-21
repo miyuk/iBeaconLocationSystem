@@ -20,7 +20,7 @@ import java.io.FileWriter;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.BeaconList;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.BeaconScanCallback;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.BeaconScanner;
-import jp.ac.oit.elc.mail.ibeaconlocationsystem.IntensitySample;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.Sample;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.R;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothBeacon;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;
@@ -78,7 +78,7 @@ public class ConfigActivity extends AppCompatActivity {
                 file.createNewFile();
             }
             BufferedWriter writer = new BufferedWriter(new FileWriter(file, false));
-            for (IntensitySample sample : mIntensityMap.getSampleList()) {
+            for (Sample sample : mIntensityMap.getSampleList()) {
                 StringBuffer buffer = new StringBuffer();
                 buffer.append(String.format("%d,%d", sample.x, sample.y));
                 for (BluetoothBeacon beacon : sample.getBtBeaconList()) {

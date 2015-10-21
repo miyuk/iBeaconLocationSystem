@@ -6,13 +6,13 @@ import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;
 /**
  * Created by yuuki on 10/6/15.
  */
-public class IntensitySample {
+public class Sample {
     public int x;
     public int y;
     private BeaconList<BluetoothBeacon> mBtBeaconList;
     private BeaconList<WifiBeacon> mWifiBeaconList;
 
-    public IntensitySample(int x, int y, BeaconList<BluetoothBeacon> btBeaconList, BeaconList<WifiBeacon> wifiBeaconList) {
+    public Sample(int x, int y, BeaconList<BluetoothBeacon> btBeaconList, BeaconList<WifiBeacon> wifiBeaconList) {
         this.x = x;
         this.y = y;
         mBtBeaconList = btBeaconList;
