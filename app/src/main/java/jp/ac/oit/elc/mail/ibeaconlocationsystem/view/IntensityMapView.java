@@ -9,13 +9,11 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.util.AttributeSet;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import it.sephiroth.android.library.imagezoom.ImageViewTouch;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.BeaconList;
-import jp.ac.oit.elc.mail.ibeaconlocationsystem.Sample;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.R;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.Sample;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.SampleList;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothBeacon;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.utils.CoordinateUtils;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;
@@ -30,17 +28,16 @@ public class IntensityMapView extends ImageViewTouch {
     private Paint mExpectedRangePaint;
     private Paint mPointCenterPaint;
     private Context mContext;
-    private List<Sample> mSampleList;
+    private SampleList mSampleList;
     private Point mPinPosition;
     private Point mUserPosition;
     private Point mPinOffset;
     private Bitmap mPinBmp;
-    private Bitmap mMapBmp;
 
     @Override
     public void onWindowFocusChanged(boolean hasWindowFocus) {
         super.onWindowFocusChanged(hasWindowFocus);
-        if (mPinPosition.equals(0, 0)) {
+        if (mPinPosition == null) {
             mPinPosition.set((int) getCenter().x, (int) getCenter().y);
         }
     }
@@ -57,12 +54,15 @@ public class IntensityMapView extends ImageViewTouch {
         super(context, attrs, defStyleAttr);
         setScaleType(ScaleType.MATRIX);
         mContext = context;
-        mSampleList = new ArrayList<>();
+        mSampleList = new SampleList();
         mPinBmp = BitmapFactory.decodeResource(getResources(), R.mipmap.location_pin);
-        mMapBmp = BitmapFactory.decodeResource(getResources(), R.mipmap.floor_map);
-        mPinPosition = new Point();
+        mPinPosition = null;
         //tip of pin is center of bottom
         mPinOffset = new Point(-mPinBmp.getWidth() / 2, -mPinBmp.getHeight());
+        initPaint();
+    }
+
+    private void initPaint() {
         mUserPosition = new Point();
         mExpectedRangePaint = new Paint();
         mExpectedRangePaint.setARGB(50, 0, 255, 255);
@@ -77,7 +77,7 @@ public class IntensityMapView extends ImageViewTouch {
         super.onDraw(canvas);
         // draw pin
         canvas.drawBitmap(mPinBmp, mPinPosition.x + mPinOffset.x, mPinPosition.y + mPinOffset.y, null);
-        //draw sample list
+        //draw addSample list
         for (Sample sample : mSampleList) {
             Point point = CoordinateUtils.clientToScreenPoint(sample.x, sample.y, getImageViewMatrix());
             canvas.drawCircle(point.x, point.y, SCAN_POINT_EXPECTED_RANGE * getScale(), mExpectedRangePaint);
@@ -90,26 +90,37 @@ public class IntensityMapView extends ImageViewTouch {
         invalidate();
     }
 
+    public Point getPinPosition() {
+        return mPinPosition;
+    }
+
     public void setUserPosition(int x, int y) {
         mPinPosition.set(x, y);
         invalidate();
     }
 
-    public void sample(BeaconList<BluetoothBeacon> btBeaconList, BeaconList<WifiBeacon> wifiBeaconList) {
+    public Point getUserPositon() {
+        return mUserPosition;
+    }
+
+    public void addSample(BeaconList<BluetoothBeacon> btBeaconList, BeaconList<WifiBeacon> wifiBeaconList) {
         Point point = CoordinateUtils.screenToClientPoint(mPinPosition.x, mPinPosition.y, getImageViewMatrix());
         Sample sample = new Sample(point.x, point.y, btBeaconList, wifiBeaconList);
-        sample(sample);
+        addSample(sample);
         invalidate();
     }
 
-    public void sample(Sample sample) {
+    public void addSample(Sample sample) {
         mSampleList.add(sample);
         invalidate();
     }
 
-    public List<Sample> getSampleList() {
+    public SampleList getSampleList() {
         return mSampleList;
     }
+
+    public void setSampleList(SampleList sampleList) {
+        mSampleList = sampleList;
+        invalidate();
+    }
 }
-
-

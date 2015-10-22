@@ -19,7 +19,6 @@ public class LocateActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_locate);
         initViews();
         mClassifier = new LocationClassifier(WEKA_HOME);
@@ -31,6 +30,5 @@ public class LocateActivity extends AppCompatActivity {
         mIntensityMapView = (IntensityMapView) findViewById(R.id.intensityMapView);
         mTextStatus = (TextView) findViewById(R.id.textStatus);
         mIntensityMapView.setImageResource(R.mipmap.floor_map);
-
     }
 }

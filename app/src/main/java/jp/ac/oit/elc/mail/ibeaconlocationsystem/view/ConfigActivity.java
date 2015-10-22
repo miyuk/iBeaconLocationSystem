@@ -105,8 +105,8 @@ public class ConfigActivity extends AppCompatActivity {
 //                mButtonStep.setEnabled(mIsStart);
 //                mButtonStart.setText("End");
 //            }else{
-//                for(IntensitySample sample: mMidSampleList){
-//                    mIntensityMap.sample(sample);
+//                for(IntensitySample addSample: mMidSampleList){
+//                    mIntensityMap.addSample(addSample);
 //                }
 //                mIsStart = false;
 //                mButtonStep.setEnabled(mIsStart);
@@ -141,7 +141,7 @@ public class ConfigActivity extends AppCompatActivity {
         public void onScanned(BeaconList<BluetoothBeacon> btBeaconList, BeaconList<WifiBeacon> wifiBeaconList) {
             mProgDialog.dismiss();
             Toast.makeText(ConfigActivity.this, String.format("Scan Complete: BT(%d), Wifi(%d)", btBeaconList.size(), wifiBeaconList.size()), Toast.LENGTH_SHORT).show();
-            mIntensityMap.sample(btBeaconList, wifiBeaconList);
+            mIntensityMap.addSample(btBeaconList, wifiBeaconList);
             mButtonStep.setEnabled(true);
         }
 
