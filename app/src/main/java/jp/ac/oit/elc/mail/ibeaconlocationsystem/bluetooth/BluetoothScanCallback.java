@@ -18,7 +18,7 @@ import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothBeacon;
  * Created by yuuki on 10/6/15.
  */
 public class BluetoothScanCallback extends ScanCallback{
-    private static final String TAG = "BluetoothScanCallback";
+    private static final String TAG = BluetoothScanCallback.class.getSimpleName();
     private BeaconList<BluetoothBeacon> mBtBeaconList;
     private BluetoothLeScanner mBtScanner;
     private List<ScanFilter> mBtFilterList;

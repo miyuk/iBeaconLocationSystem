@@ -14,13 +14,17 @@ import weka.core.Instances;
  * Created by yuuki on 10/21/15.
  */
 public class LocationInstances extends Instances {
-    private static final int DEFAULT_INSTANCES_CAPACITY = 1000;
-    public LocationInstances(){
-        super("IntensityMap", new ArrayList<Attribute>(), DEFAULT_INSTANCES_CAPACITY);
+    private static final int INSTANCES_CAPACITY = 1000;
+    private static final int OUT_OF_RANGE_RSSI = -70;
+    private static final int LOWER_RSSI = -90;
+    private static final int UPPER_RSSI = -20;
+
+    public LocationInstances() {
+        super("IntensityMap", new ArrayList<Attribute>(), INSTANCES_CAPACITY);
     }
 
-    public boolean load(SampleList samples){
-        //build attribute
+    public boolean setDataSet(SampleList samples) {
+        // config attribute
         List<String> posList = new ArrayList<>(); //nominal value of position
         for (Sample sample : samples) {
             for (BluetoothBeacon beacon : sample.getBtBeaconList()) {
@@ -38,9 +42,12 @@ public class LocationInstances extends Instances {
         //set instance
         for (Sample sample : samples) {
             double[] vals = new double[this.numAttributes()];
+            for (double val : vals) {
+                val = -1.0;
+            }
             for (BluetoothBeacon beacon : sample.getBtBeaconList()) {
                 int index = this.attribute(beacon.getMacAddress()).index();
-                vals[index] = beacon.getRssi();
+                vals[index] = convertRssiValue(beacon.getRssi());
             }
             String tag = String.format("%d-%d", sample.x, sample.y);
             Attribute attr = this.attribute("location");
@@ -51,4 +58,10 @@ public class LocationInstances extends Instances {
         return true;
     }
 
+    private static double convertRssiValue(int rssi) {
+        if (rssi < OUT_OF_RANGE_RSSI) {
+            return -1.0;
+        }
+        return (2 * rssi - (UPPER_RSSI + LOWER_RSSI)) / (UPPER_RSSI - LOWER_RSSI);
+    }
 }

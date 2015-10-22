@@ -24,6 +24,10 @@ public abstract class BaseBeacon {
         return mRssi;
     }
 
+    public Date getLastUpdateTime() {
+        return mLastUpdateTime;
+    }
+
     public void update(int rssi) {
         mRssi = rssi;
         mLastUpdateTime = new Date();

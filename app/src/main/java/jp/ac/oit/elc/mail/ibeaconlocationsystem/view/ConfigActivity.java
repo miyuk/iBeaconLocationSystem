@@ -2,7 +2,6 @@ package jp.ac.oit.elc.mail.ibeaconlocationsystem.view;
 
 import android.app.ProgressDialog;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -20,15 +19,15 @@ import java.io.FileWriter;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.BeaconList;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.BeaconScanCallback;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.BeaconScanner;
-import jp.ac.oit.elc.mail.ibeaconlocationsystem.Sample;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.R;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.Sample;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothBeacon;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;
 
+import static jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment.INTENSITY_MAP_PATH;
 
 public class ConfigActivity extends AppCompatActivity {
-    private static final String TAG = "MainActivity";
-    private static final String INTENSITY_MAP_FILE = "/local/intensity_map.csv";
+    private static final String TAG = ConfigActivity.class.getSimpleName();
     private BeaconScanner mBeaconScanner;
     private Button mButtonStart;
     private Button mButtonStep;
@@ -73,8 +72,8 @@ public class ConfigActivity extends AppCompatActivity {
 
     private void saveIntensityMap() {
         try {
-            File file = new File(Environment.getExternalStorageDirectory() + INTENSITY_MAP_FILE);
-            if(!file.exists()){
+            File file = new File(INTENSITY_MAP_PATH);
+            if (!file.exists()) {
                 file.createNewFile();
             }
             BufferedWriter writer = new BufferedWriter(new FileWriter(file, false));
@@ -122,7 +121,7 @@ public class ConfigActivity extends AppCompatActivity {
             if (!mToggleLockMap.isChecked()) {
                 return false;
             }
-            mIntensityMap.setPinPosition((int)event.getX(), (int)event.getY());
+            mIntensityMap.setPinPosition((int) event.getX(), (int) event.getY());
             return false;
         }
     };

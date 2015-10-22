@@ -1,25 +1,10 @@
 package jp.ac.oit.elc.mail.ibeaconlocationsystem.classification;
 
-import android.os.Environment;
 import android.util.Log;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Dictionary;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import jp.ac.oit.elc.mail.ibeaconlocationsystem.Sample;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.SampleList;
-import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothBeacon;
 import weka.classifiers.functions.MultilayerPerceptron;
-import weka.core.Attribute;
-import weka.core.DenseInstance;
-import weka.core.FastVector;
-import weka.core.Instance;
 import weka.core.Instances;
-import weka.core.WekaPackageManager;
 
 /**
  * Created by yuuki on 10/20/15.
@@ -30,7 +15,9 @@ public class LocationClassifier {
     private LocationInstances mInstances;
     private MultilayerPerceptron mBackProp;
 
-    public LocationClassifier() {
+    public LocationClassifier(String wekahome) {
+        weka.core.Environment.getSystemWide().addVariable("WEKA_HOME", wekahome);
+        Log.d(TAG, wekahome);
         mInstances = new LocationInstances();
         mBackProp = new MultilayerPerceptron();
     }
@@ -40,14 +27,14 @@ public class LocationClassifier {
         if (samples == null) {
             return false;
         }
-        return mInstances.load(samples);
+        return mInstances.setDataSet(samples);
     }
 
 
     public void build() {
         try {
-            mBackProp.setHiddenLayers("1");
-            mBackProp.setTrainingTime(100);
+            mBackProp.setHiddenLayers("a");
+            mBackProp.setTrainingTime(1000);
             mBackProp.setLearningRate(0.1);
             mBackProp.buildClassifier(mInstances);
         } catch (Exception e) {
@@ -59,5 +46,8 @@ public class LocationClassifier {
         return mInstances;
     }
 
+    public MultilayerPerceptron getClassifier() {
+        return mBackProp;
+    }
 
 }

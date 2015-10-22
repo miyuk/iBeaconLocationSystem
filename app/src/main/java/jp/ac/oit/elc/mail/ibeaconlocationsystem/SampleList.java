@@ -1,16 +1,11 @@
 package jp.ac.oit.elc.mail.ibeaconlocationsystem;
 
-import android.util.Log;
-import android.widget.Toast;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.StringTokenizer;
 
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothBeacon;
@@ -19,11 +14,11 @@ import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothBeacon;
  * Created by yuuki on 10/21/15.
  */
 public class SampleList extends ArrayList<Sample> {
-    public SampleList(){
+    public SampleList() {
         super();
     }
 
-    public static SampleList load(String path){
+    public static SampleList load(String path) {
         File csv = new File(path);
         if (!csv.exists()) {
             return null;
@@ -36,7 +31,7 @@ public class SampleList extends ArrayList<Sample> {
                 int x = Integer.parseInt(token.nextToken());
                 int y = Integer.parseInt(token.nextToken());
                 BeaconList<BluetoothBeacon> beaconList = new BeaconList<>();
-                while(token.countTokens() >= 2){
+                while (token.countTokens() >= 2) {
                     String mac = token.nextToken();
                     int rssi = Integer.parseInt(token.nextToken());
                     beaconList.add(new BluetoothBeacon(mac, rssi));
@@ -51,7 +46,7 @@ public class SampleList extends ArrayList<Sample> {
         }
     }
 
-    public boolean save(String path){
+    public boolean save(String path) {
         File csv = new File(path);
         if (!csv.exists()) {
             try {

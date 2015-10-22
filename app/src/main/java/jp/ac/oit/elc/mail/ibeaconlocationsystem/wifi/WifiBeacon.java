@@ -8,12 +8,13 @@ import jp.ac.oit.elc.mail.ibeaconlocationsystem.BaseBeacon;
 public class WifiBeacon extends BaseBeacon {
 
     private String mSsid;
-    public WifiBeacon(String ssid, String macAddress, int rssi){
+
+    public WifiBeacon(String ssid, String macAddress, int rssi) {
         super(macAddress, rssi);
         mSsid = ssid;
     }
 
-    public String getSsid(){
+    public String getSsid() {
         return mSsid;
     }
 }

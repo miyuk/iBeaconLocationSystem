@@ -14,19 +14,15 @@ import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiReceiver;
  * Created by yuuki on 10/6/15.
  */
 public class BeaconScanner {
-    private static final String TAG = "BeaconScanner";
     private static final long SCAN_TIMEOUT_MILLIS = 5000;
     private Context mContext;
     private BluetoothLeScanner mBtScanner;
     private BluetoothScanCallback mBtScanCallback;
-
     private WifiReceiver mWifiReceiver;
-    private boolean mIsScanning;
 
     public BeaconScanner(Context context) {
         mContext = context;
         mBtScanner = BluetoothAdapter.getDefaultAdapter().getBluetoothLeScanner();
-
     }
 
     public void scan(final BeaconScanCallback callback) {
@@ -61,10 +57,7 @@ public class BeaconScanner {
                 BeaconList<WifiBeacon> wifiList = beaconLists[1];
                 callback.onScanned(btList, wifiList);
             }
-
         };
         scanAsyncTask.execute(callback);
     }
-
-
 }

@@ -11,13 +11,12 @@ import android.util.Log;
 import java.util.List;
 
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.BeaconList;
-import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;
 
 /**
  * Created by yuuki on 10/5/15.
  */
 public class WifiReceiver extends BroadcastReceiver {
-    private static final String TAG = "WifiReceiver";
+    private static final String TAG = WifiReceiver.class.getSimpleName();
     private WifiManager mWifiManager;
     private BeaconList<WifiBeacon> mWifiBeaconList;
     private boolean mIsScanning;
@@ -27,7 +26,7 @@ public class WifiReceiver extends BroadcastReceiver {
     public WifiReceiver(Context context) {
         super();
         mContext = context;
-        mWifiManager = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
+        mWifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         mIsScanning = false;
         mWifiFilter = new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
 
@@ -72,7 +71,8 @@ public class WifiReceiver extends BroadcastReceiver {
     public BeaconList<WifiBeacon> getBeaconList() {
         return mWifiBeaconList;
     }
-    public boolean isScanning(){
+
+    public boolean isScanning() {
         return mIsScanning;
     }
 }
