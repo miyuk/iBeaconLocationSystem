@@ -1,4 +1,4 @@
-package jp.ac.oit.elc.mail.ibeaconlocationsystem.utils;
+package jp.ac.oit.elc.mail.ibeaconlocationsystem.util;
 
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
@@ -9,7 +9,7 @@ import android.graphics.RectF;
 /**
  * Created by yuuki on 10/13/15.
  */
-public class CoordinateUtils {
+public class CoordinateUtil {
     public static PointF screenToClientPoint(float screenX, float screenY, Matrix screenMatrix) {
         float[] scrElems = new float[9];
         screenMatrix.getValues(scrElems);

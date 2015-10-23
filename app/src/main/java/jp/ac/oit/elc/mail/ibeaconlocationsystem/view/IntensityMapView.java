@@ -15,7 +15,7 @@ import jp.ac.oit.elc.mail.ibeaconlocationsystem.R;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.Sample;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.SampleList;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothBeacon;
-import jp.ac.oit.elc.mail.ibeaconlocationsystem.utils.CoordinateUtils;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.util.CoordinateUtil;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;
 
 /**
@@ -79,7 +79,7 @@ public class IntensityMapView extends ImageViewTouch {
         canvas.drawBitmap(mPinBmp, mPinPosition.x + mPinOffset.x, mPinPosition.y + mPinOffset.y, null);
         //draw addSample list
         for (Sample sample : mSampleList) {
-            Point point = CoordinateUtils.clientToScreenPoint(sample.x, sample.y, getImageViewMatrix());
+            Point point = CoordinateUtil.clientToScreenPoint(sample.x, sample.y, getImageViewMatrix());
             canvas.drawCircle(point.x, point.y, SCAN_POINT_EXPECTED_RANGE * getScale(), mExpectedRangePaint);
             canvas.drawCircle(point.x, point.y, SCAN_POINT_CENTER_RADIUS * getScale(), mPointCenterPaint);
         }
@@ -104,7 +104,7 @@ public class IntensityMapView extends ImageViewTouch {
     }
 
     public void addSample(BeaconList<BluetoothBeacon> btBeaconList, BeaconList<WifiBeacon> wifiBeaconList) {
-        Point point = CoordinateUtils.screenToClientPoint(mPinPosition.x, mPinPosition.y, getImageViewMatrix());
+        Point point = CoordinateUtil.screenToClientPoint(mPinPosition.x, mPinPosition.y, getImageViewMatrix());
         Sample sample = new Sample(point.x, point.y, btBeaconList, wifiBeaconList);
         addSample(sample);
         invalidate();
