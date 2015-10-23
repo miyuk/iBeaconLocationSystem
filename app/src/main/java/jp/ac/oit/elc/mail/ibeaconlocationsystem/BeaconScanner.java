@@ -14,7 +14,7 @@ import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiReceiver;
  * Created by yuuki on 10/6/15.
  */
 public class BeaconScanner {
-    private static final long SCAN_TIMEOUT_MILLIS = 5000;
+    private static final long SCAN_TIMEOUT_MILLIS = 2000;
     private Context mContext;
     private BluetoothLeScanner mBtScanner;
     private BluetoothScanCallback mBtScanCallback;

@@ -5,12 +5,12 @@ import java.util.Date;
 /**
  * Created by yuuki on 10/2/15.
  */
-public abstract class BaseBeacon {
+public abstract class BeaconBase {
     protected String mMacAddress;
     protected int mRssi;
     protected Date mLastUpdateTime;
 
-    public BaseBeacon(String macAddress, int rssi) {
+    public BeaconBase(String macAddress, int rssi) {
         mMacAddress = macAddress;
         mRssi = rssi;
         mLastUpdateTime = new Date();

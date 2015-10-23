@@ -8,9 +8,9 @@ import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;
  */
 public interface BeaconScanCallback {
 
-    public void onStartScan();
+    void onStartScan();
 
-    public void onScanned(BeaconList<BluetoothBeacon> btBeaconList, BeaconList<WifiBeacon> wifiBeaconList);
+    void onScanned(BeaconList<BluetoothBeacon> btBeaconList, BeaconList<WifiBeacon> wifiBeaconList);
 
-    public void onScanFailed();
+    void onScanFailed();
 }

@@ -1,11 +1,11 @@
 package jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi;
 
-import jp.ac.oit.elc.mail.ibeaconlocationsystem.BaseBeacon;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.BeaconBase;
 
 /**
  * Created by yuuki on 10/2/15.
  */
-public class WifiBeacon extends BaseBeacon {
+public class WifiBeacon extends BeaconBase {
 
     private String mSsid;
 

@@ -21,7 +21,7 @@
             android:layout_height="0dp"
             android:text="Status"
             android:id="@+id/textStatus"
-            android:layout_below="@+id/buttonStart"
+            android:layout_below="@+id/buttonSet"
             android:layout_centerHorizontal="true"
             android:layout_alignParentBottom="true"
             android:layout_weight="1"
