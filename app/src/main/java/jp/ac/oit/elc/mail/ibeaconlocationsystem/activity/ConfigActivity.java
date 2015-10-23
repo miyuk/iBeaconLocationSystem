@@ -1,4 +1,4 @@
-package jp.ac.oit.elc.mail.ibeaconlocationsystem.view;
+package jp.ac.oit.elc.mail.ibeaconlocationsystem.activity;
 
 import android.app.ProgressDialog;
 import android.os.Bundle;
@@ -22,6 +22,7 @@ import jp.ac.oit.elc.mail.ibeaconlocationsystem.BeaconScanner;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.R;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.Sample;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothBeacon;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.view.IntensityMapView;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;
 
 import static jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment.INTENSITY_MAP_PATH;

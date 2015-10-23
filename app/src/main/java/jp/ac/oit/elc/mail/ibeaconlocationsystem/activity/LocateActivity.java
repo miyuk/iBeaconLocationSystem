@@ -1,4 +1,4 @@
-package jp.ac.oit.elc.mail.ibeaconlocationsystem.view;
+package jp.ac.oit.elc.mail.ibeaconlocationsystem.activity;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -6,6 +6,7 @@ import android.widget.TextView;
 
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.R;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.classification.LocationClassifier;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.view.IntensityMapView;
 
 import static jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment.INTENSITY_MAP_PATH;
 import static jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment.WEKA_HOME;

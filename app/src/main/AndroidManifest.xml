@@ -15,12 +15,12 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".view.ConfigActivity">
+        <activity android:name=".activity.ConfigActivity">
 
         </activity>
-        <activity android:name=".view.LocateActivity"></activity>
+        <activity android:name=".activity.LocateActivity"></activity>
 
-        <activity android:name=".view.MenuActivity">
+        <activity android:name=".activity.MenuActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

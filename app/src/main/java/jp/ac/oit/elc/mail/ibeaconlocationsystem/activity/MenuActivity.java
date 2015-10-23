@@ -1,4 +1,4 @@
-package jp.ac.oit.elc.mail.ibeaconlocationsystem.view;
+package jp.ac.oit.elc.mail.ibeaconlocationsystem.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
