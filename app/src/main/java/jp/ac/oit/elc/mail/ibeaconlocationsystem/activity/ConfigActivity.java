@@ -3,6 +3,7 @@ package jp.ac.oit.elc.mail.ibeaconlocationsystem.activity;
 import android.app.ProgressDialog;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.os.Bundle;
@@ -36,16 +37,14 @@ public class ConfigActivity extends AppCompatActivity {
     private static final String TAG = ConfigActivity.class.getSimpleName();
     private BeaconScanner mBeaconScanner;
     private Button mButtonStart;
-    private Button mButtonSet;
     private Button mButtonStep;
     private CheckBox mToggleLockMap;
     private TextView mTextStatus;
     private IntensityMapView mIntensityMap;
     private ProgressDialog mProgDialog;
-    private List<List<Point>> mSetPoints;
+    private List<Point[]> mSetPoints;
     private SampleList mSampleBuffer;
     private boolean isStart;
-    private int lastStartIndex;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +58,6 @@ public class ConfigActivity extends AppCompatActivity {
 
     private void initViews() {
         mButtonStart = (Button) findViewById(R.id.buttonStart);
-        mButtonSet = (Button) findViewById(R.id.buttonSet);
         mButtonStep = (Button) findViewById(R.id.buttonStep);
         mToggleLockMap = (CheckBox) findViewById(R.id.toggleLockMap);
         mTextStatus = (TextView) findViewById(R.id.textStatus);
@@ -69,59 +67,28 @@ public class ConfigActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (!isStart) {
                     mButtonStart.setEnabled(false);
-                    mButtonSet.setEnabled(true);
-                    mButtonStep.setEnabled(false);
-                    mSetPoints.add(new ArrayList<Point>());
+                    mButtonStep.setEnabled(true);
+                    mSetPoints.add(new Point[2]);
+                    mSetPoints.get(mSetPoints.size() - 1)[0] = mIntensityMap.getPinImageCoordPosition();
+                    mBeaconScanner.scan(beaconScanCallback);
                     isStart = true;
-                    lastStartIndex = 0;
+
                     mButtonStart.setText("Stop");
                 } else {
-                    saveIntensityMap();
+                    mSetPoints.get(mSetPoints.size() - 1)[1] = mIntensityMap.getPinImageCoordPosition();
+                    flushBufferedSample();
                     mButtonStart.setText("Start");
                     mButtonStart.setEnabled(true);
-                    mButtonSet.setEnabled(false);
                     mButtonStep.setEnabled(false);
                     isStart = false;
                 }
-            }
-        });
-        mButtonSet.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                List<Point> latestSet = mSetPoints.get(mSetPoints.size() - 1);
-                Point currentPoint = mIntensityMap.getPinImageCoordPosition();
-                latestSet.add(currentPoint);
-                if(latestSet.size() == 1){
-                    mButtonStart.setEnabled(false);
-                    mButtonSet.setEnabled(false);
-                    mButtonStep.setEnabled(true);
-                    return;
-                }
-                Point lineSPoint = latestSet.get(latestSet.size() - lastStartIndex - 1);
-                Point offset = new Point(currentPoint.x - lineSPoint.x, currentPoint.y - lineSPoint.y);
-                int numPoints = mSampleBuffer.size() - 1;
-                for (int i = 0; i < mSampleBuffer.size(); i++){
-                    int x = lineSPoint.x + (offset.x * i / numPoints);
-                    int y = lineSPoint.y + (offset.y * i / numPoints);
-                    Sample sample = mSampleBuffer.get(i);
-                    sample.x = x;
-                    sample.y = y;
-                    Log.d(TAG, "add sample");
-                    mIntensityMap.addSample(sample);
-                }
-                lastStartIndex = latestSet.size();
-                mSampleBuffer.clear();
-                mButtonStart.setEnabled(true);
-                mButtonSet.setEnabled(false);
-                mButtonStep.setEnabled(true);
             }
         });
         mButtonStep.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mBeaconScanner.scan(beaconScanCallback);
-                mButtonStart.setEnabled(false);
-                mButtonSet.setEnabled(true);
+                mButtonStart.setEnabled(true);
                 mButtonStep.setEnabled(true);
             }
         });
@@ -129,6 +96,24 @@ public class ConfigActivity extends AppCompatActivity {
         mIntensityMap.setOnTouchListener(mapTouchListener);
         mIntensityMap.setImageResource(R.mipmap.floor_map);
         mIntensityMap.setOnDrawListener(mapDrawListener);
+    }
+
+    private void flushBufferedSample() {
+        Point[] lastSet = mSetPoints.get(mSetPoints.size() - 1);
+        Point sp = lastSet[0];
+        Point ep = lastSet[1];
+        Point offset = new Point(ep.x - sp.x, ep.y - sp.y);
+        int numPoints = mSampleBuffer.size() - 1;
+        for (int i = 0; i <= numPoints; i++) {
+            int x = sp.x + (offset.x * i / numPoints);
+            int y = sp.y + (offset.y * i / numPoints);
+            Sample sample = mSampleBuffer.get(i);
+            sample.x = x;
+            sample.y = y;
+            mIntensityMap.addSample(sample);
+        }
+        mSampleBuffer.clear();
+
     }
 
     private void saveIntensityMap() {
@@ -212,18 +197,21 @@ public class ConfigActivity extends AppCompatActivity {
             }
             point = mIntensityMap.screenToImageCoord(point.x, point.y);
             mTextStatus.setText(String.format("(%d,%d)", point.x, point.y));
-            for (List<Point> pointList : mSetPoints){
-                for (int i = 1; i < pointList.size(); i++){
-                    Point prevPoint = pointList.get(i - 1);
-                    Point stepPoint = pointList.get(i);
-                    Paint paint = new Paint();
-                    paint.setStyle(Paint.Style.STROKE);
-                    paint.setColor(Color.BLUE);
-                    paint.setStrokeWidth(100);
-                    Point p1 = mIntensityMap.imageToScreenCoord(prevPoint);
-                    Point p2 = mIntensityMap.imageToScreenCoord(stepPoint);
-                    canvas.drawLine(p1.x, p1.y, p2.x, p2.y, new Paint());
+            for (Point[] points : mSetPoints) {
+                Paint paint = new Paint();
+                paint.setStyle(Paint.Style.STROKE);
+                paint.setColor(Color.BLUE);
+                paint.setStrokeWidth(3);
+                Point p1 = mIntensityMap.imageToScreenCoord(points[0]);
+                Point p2;
+                if (points[1] == null) {
+                    p2 = mIntensityMap.getPinScreenCoordPosition();
+                    float[] interval = new float[]{5, 5, 5, 5};
+                    paint.setPathEffect(new DashPathEffect(interval, 0));
+                } else {
+                    p2 = mIntensityMap.imageToScreenCoord(points[1]);
                 }
+                canvas.drawLine(p1.x, p1.y, p2.x, p2.y, paint);
             }
         }
     };
