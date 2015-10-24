@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -206,12 +207,17 @@ public class ConfigActivity extends AppCompatActivity {
                 Point p2;
                 if (points[1] == null) {
                     p2 = mIntensityMap.getPinScreenCoordPosition();
-                    float[] interval = new float[]{5, 5, 5, 5};
-                    paint.setPathEffect(new DashPathEffect(interval, 0));
+                    float[] interval = new float[]{10, 10};
+                    DashPathEffect effect = new DashPathEffect(interval, 0);
+                    paint.setPathEffect(effect);
+                    paint.setColor(Color.RED);
                 } else {
                     p2 = mIntensityMap.imageToScreenCoord(points[1]);
                 }
-                canvas.drawLine(p1.x, p1.y, p2.x, p2.y, paint);
+                Path path = new Path();
+                path.moveTo(p1.x, p1.y);
+                path.lineTo(p2.x, p2.y);
+                canvas.drawPath(path, paint);
             }
         }
     };
