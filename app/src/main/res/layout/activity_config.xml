@@ -41,6 +41,16 @@
                 android:layout_weight="1"
                 android:enabled="false" />
 
+            <Button
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Save"
+                android:id="@+id/buttonSave"
+                android:layout_below="@+id/intensityMapView"
+                android:layout_toEndOf="@+id/buttonSet"
+                android:layout_weight="1"
+                android:enabled="false" />
+
             <CheckBox
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"

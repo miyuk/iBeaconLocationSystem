@@ -48,10 +48,12 @@ public class SampleList extends ArrayList<Sample> {
 
     public boolean save(String path) {
         File csv = new File(path);
+        csv.getParentFile().mkdirs();
         if (!csv.exists()) {
             try {
                 csv.createNewFile();
             } catch (Exception e) {
+                e.printStackTrace();
                 return false;
             }
         }

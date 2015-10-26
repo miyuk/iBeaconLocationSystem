@@ -8,12 +8,12 @@ import java.util.Date;
 public abstract class BeaconBase {
     protected String mMacAddress;
     protected int mRssi;
-    protected Date mLastUpdateTime;
+    protected Date mUpdatedTime;
 
     public BeaconBase(String macAddress, int rssi) {
         mMacAddress = macAddress;
         mRssi = rssi;
-        mLastUpdateTime = new Date();
+        mUpdatedTime = new Date();
     }
 
     public String getMacAddress() {
@@ -24,12 +24,17 @@ public abstract class BeaconBase {
         return mRssi;
     }
 
-    public Date getLastUpdateTime() {
-        return mLastUpdateTime;
+    public Date getUpdatedTime() {
+        return mUpdatedTime;
     }
 
     public void update(int rssi) {
         mRssi = rssi;
-        mLastUpdateTime = new Date();
+        mUpdatedTime = new Date();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return mMacAddress.equals(o);
     }
 }

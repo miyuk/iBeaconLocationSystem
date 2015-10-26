@@ -8,9 +8,11 @@ import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.Context;
+import android.provider.ContactsContract;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.BeaconList;
@@ -24,25 +26,21 @@ public class BluetoothScanManager extends ScanCallback{
     private BluetoothLeScanner mBtScanner;
     private List<ScanFilter> mBtFilterList;
     private ScanSettings mBtSettings;
-    private boolean mIsScannning;
     public BluetoothScanManager(Context context){
         BluetoothManager btManager = (BluetoothManager)context.getSystemService(Context.BLUETOOTH_SERVICE);
         mBtScanner = btManager.getAdapter().getBluetoothLeScanner();
-        mIsScannning = false;
         mBtFilterList = new ArrayList<>();
         mBtFilterList.add(new ScanFilter.Builder().build());
         mBtSettings = new ScanSettings.Builder().build();
     }
 
     public void startScan(){
-        mIsScannning = true;
         mBtBeaconList = new BeaconList<>();
         mBtScanner.startScan(mBtFilterList, mBtSettings, this);
     }
 
     public void stopScan(){
         mBtScanner.stopScan(this);
-        mIsScannning = false;
     }
     public BeaconList<BluetoothBeacon> getBeaconList(){
         return mBtBeaconList;
@@ -74,5 +72,8 @@ public class BluetoothScanManager extends ScanCallback{
         Log.i(TAG, "add BT beacon: " + device.getAddress());
         BluetoothBeacon beacon = new BluetoothBeacon(device.getAddress(), result.getRssi());
         mBtBeaconList.add(beacon);
+    }
+    public Date getUpdatedTime(){
+        return mBtBeaconList.getUpdatedTime();
     }
 }

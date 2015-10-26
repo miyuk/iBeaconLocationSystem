@@ -6,11 +6,27 @@ import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;
 /**
  * Created by yuuki on 10/6/15.
  */
-public interface BeaconScanCallback {
+public abstract class BeaconScanCallback {
 
-    void onStartScan();
+    public void onStartScan() {
 
-    void onScanned(BeaconList<BluetoothBeacon> btBeaconList, BeaconList<WifiBeacon> wifiBeaconList);
+    }
 
-    void onScanFailed();
+    public void onUpdateScanResult(BeaconList<BluetoothBeacon> btBeacons, BeaconList<WifiBeacon> wifiBeacons) {
+
+    }
+
+    public void onScanTimeout(BeaconList<BluetoothBeacon> btBeacons, BeaconList<WifiBeacon> wifiBeacons) {
+
+    }
+
+    public void onScanFailed() {
+
+    }
+
+    public void onScanCancelled() {
+
+    }
+
+
 }

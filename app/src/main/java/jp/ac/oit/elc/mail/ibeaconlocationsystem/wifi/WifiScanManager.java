@@ -8,6 +8,7 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.util.Log;
 
+import java.util.Date;
 import java.util.List;
 
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.BeaconList;
@@ -19,7 +20,6 @@ public class WifiScanManager extends BroadcastReceiver {
     private static final String TAG = WifiScanManager.class.getSimpleName();
     private WifiManager mWifiManager;
     private BeaconList<WifiBeacon> mWifiBeaconList;
-    private boolean mIsScanning;
     private Context mContext;
     private IntentFilter mWifiFilter;
 
@@ -27,14 +27,12 @@ public class WifiScanManager extends BroadcastReceiver {
         super();
         mContext = context;
         mWifiManager = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
-        mIsScanning = false;
         mWifiFilter = new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
 
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (!mIsScanning) return;
         Log.d(TAG, "onReceive");
         List<ScanResult> resultList = mWifiManager.getScanResults();
         for (ScanResult result : resultList) {
@@ -57,7 +55,6 @@ public class WifiScanManager extends BroadcastReceiver {
     }
 
     public void startScan() {
-        mIsScanning = true;
         mWifiBeaconList = new BeaconList<>();
         mContext.registerReceiver(this, mWifiFilter);
         mWifiManager.startScan();
@@ -65,14 +62,13 @@ public class WifiScanManager extends BroadcastReceiver {
 
     public void stopScan() {
         mContext.unregisterReceiver(this);
-        mIsScanning = false;
     }
 
     public BeaconList<WifiBeacon> getBeaconList() {
         return mWifiBeaconList;
     }
 
-    public boolean isScanning() {
-        return mIsScanning;
+    public Date getUpdatedTime(){
+        return mWifiBeaconList.getUpdatedTime();
     }
 }

@@ -1,10 +1,10 @@
 package jp.ac.oit.elc.mail.ibeaconlocationsystem;
 
-import android.content.AsyncTaskLoader;
 import android.content.Context;
 import android.os.AsyncTask;
 
-import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothBeacon;
+import java.util.Date;
+
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothScanManager;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiScanManager;
 
@@ -12,11 +12,10 @@ import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiScanManager;
  * Created by yuuki on 10/6/15.
  */
 public class BeaconScanner{
-    private static final long SCAN_TIMEOUT_MILLIS = 2000;
+    private static final long DEFAULT_SCAN_TIMEOUT_MILLIS = 2000;
     private BluetoothScanManager mBtScanManager;
     private WifiScanManager mWifiScanManager;
     private boolean mStarted = false;
-    private BeaconScanCallback mCallback;
 
     public BeaconScanner(Context context) {
         mWifiScanManager = new WifiScanManager(context);
@@ -27,36 +26,61 @@ public class BeaconScanner{
         if (mStarted) {
             return;
         }
-        BeaconScanAsyncTask scanTask = new BeaconScanAsyncTask(callback);
-        callback.onStartScan();
+
+        BeaconScanAsyncTask scanTask = new BeaconScanAsyncTask(DEFAULT_SCAN_TIMEOUT_MILLIS, callback);
         scanTask.execute();
     }
+
+
     private class BeaconScanAsyncTask extends AsyncTask<Void, BeaconList[], BeaconList[]>{
+        private long mScanTimeoutMills;
         private BeaconScanCallback mCallback;
-        public BeaconScanAsyncTask(BeaconScanCallback callback){
+        private Date mLastCheckTime;
+        public BeaconScanAsyncTask(long scanTimeoutMills, BeaconScanCallback callback){
             super();
+            mScanTimeoutMills = scanTimeoutMills;
             mCallback = callback;
         }
 
         @Override
-        protected void onPostExecute(BeaconList[] beaconLists) {
-            super.onPostExecute(beaconLists);
-            mCallback.onScanned(beaconLists[0], beaconLists[1]);
+        protected void onPreExecute() {
+            super.onPreExecute();
+            mCallback.onStartScan();
+        }
+
+        @Override
+        protected void onPostExecute(BeaconList[] values) {
+            super.onPostExecute(values);
+            mCallback.onScanTimeout(values[0], values[1]);
         }
 
         @Override
         protected void onProgressUpdate(BeaconList[]... values) {
             super.onProgressUpdate(values);
+            mCallback.onUpdateScanResult(values[0][0], values[0][1]);
         }
 
         @Override
         protected BeaconList[] doInBackground(Void... params) {
             mBtScanManager.startScan();
             mWifiScanManager.startScan();
-            try {
-                Thread.sleep(SCAN_TIMEOUT_MILLIS);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            mLastCheckTime = new Date();
+            if (mScanTimeoutMills == 0){
+                while(!isCancelled()){
+                    if(mLastCheckTime.before(mBtScanManager.getUpdatedTime()) || mLastCheckTime.before(mWifiScanManager.getUpdatedTime())){
+                        BeaconList[] beacons = new BeaconList[2];
+                        beacons[0] = mBtScanManager.getBeaconList();
+                        beacons[1] = mWifiScanManager.getBeaconList();
+                        mLastCheckTime = new Date();
+                        publishProgress(beacons);
+                    }
+                }
+            }else {
+                try {
+                    Thread.sleep(DEFAULT_SCAN_TIMEOUT_MILLIS);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
             mBtScanManager.stopScan();
             mWifiScanManager.stopScan();
