@@ -15,18 +15,18 @@ import jp.ac.oit.elc.mail.ibeaconlocationsystem.BeaconList;
 /**
  * Created by yuuki on 10/5/15.
  */
-public class WifiReceiver extends BroadcastReceiver {
-    private static final String TAG = WifiReceiver.class.getSimpleName();
+public class WifiScanManager extends BroadcastReceiver {
+    private static final String TAG = WifiScanManager.class.getSimpleName();
     private WifiManager mWifiManager;
     private BeaconList<WifiBeacon> mWifiBeaconList;
     private boolean mIsScanning;
     private Context mContext;
     private IntentFilter mWifiFilter;
 
-    public WifiReceiver(Context context) {
+    public WifiScanManager(Context context) {
         super();
         mContext = context;
-        mWifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        mWifiManager = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
         mIsScanning = false;
         mWifiFilter = new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
 

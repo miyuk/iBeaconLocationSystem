@@ -1,5 +1,6 @@
 package jp.ac.oit.elc.mail.ibeaconlocationsystem.activity;
 
+import android.graphics.Canvas;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
@@ -7,6 +8,7 @@ import android.widget.TextView;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.R;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.classification.LocationClassifier;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.view.IntensityMapView;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.view.OnDrawListener;
 
 import static jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment.INTENSITY_MAP_PATH;
 import static jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment.WEKA_HOME;
@@ -31,5 +33,12 @@ public class LocateActivity extends AppCompatActivity {
         mIntensityMapView = (IntensityMapView) findViewById(R.id.intensityMapView);
         mTextStatus = (TextView) findViewById(R.id.textStatus);
         mIntensityMapView.setImageResource(R.mipmap.floor_map);
+        mIntensityMapView.setOnDrawListener(mapOnDrawListener);
     }
+    private OnDrawListener mapOnDrawListener = new OnDrawListener() {
+        @Override
+        public void onDraw(Canvas canvas) {
+
+        }
+    };
 }

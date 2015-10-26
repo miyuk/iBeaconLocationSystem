@@ -1,6 +1,8 @@
 package jp.ac.oit.elc.mail.ibeaconlocationsystem.activity;
 
+import android.app.LoaderManager;
 import android.app.ProgressDialog;
+import android.content.Loader;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
@@ -34,7 +36,7 @@ import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;
 
 import static jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment.INTENSITY_MAP_PATH;
 
-public class ConfigActivity extends AppCompatActivity {
+public class ConfigActivity extends AppCompatActivity{
     private static final String TAG = ConfigActivity.class.getSimpleName();
     private BeaconScanner mBeaconScanner;
     private Button mButtonStart;
@@ -71,7 +73,7 @@ public class ConfigActivity extends AppCompatActivity {
                     mButtonStep.setEnabled(true);
                     mSetPoints.add(new Point[2]);
                     mSetPoints.get(mSetPoints.size() - 1)[0] = mIntensityMap.getPinImageCoordPosition();
-                    mBeaconScanner.scan(beaconScanCallback);
+                    mBeaconScanner.startScan(beaconScanCallback);
                     isStart = true;
 
                     mButtonStart.setText("Stop");
@@ -88,7 +90,7 @@ public class ConfigActivity extends AppCompatActivity {
         mButtonStep.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mBeaconScanner.scan(beaconScanCallback);
+                mBeaconScanner.startScan(beaconScanCallback);
                 mButtonStart.setEnabled(true);
                 mButtonStep.setEnabled(true);
             }
@@ -121,25 +123,6 @@ public class ConfigActivity extends AppCompatActivity {
         mIntensityMap.getSampleList().save(INTENSITY_MAP_PATH);
     }
 
-    //    private View.OnClickListener buttonStartClick = new View.OnClickListener() {
-//        @Override
-//        public void onClick(View v) {
-//            if(!mIsStart){
-//                mSetPoints.clear();
-//                mIsStart = true;
-//                mButtonStep.setEnabled(mIsStart);
-//                mButtonSet.setText("End");
-//            }else{
-//                for(IntensitySample addSample: mSetPoints){
-//                    mIntensityMap.addSample(addSample);
-//                }
-//                mIsStart = false;
-//                mButtonStep.setEnabled(mIsStart);
-//                mButtonSet.setText("Start");
-//
-//            }
-//        }
-//    };
     private View.OnTouchListener mapTouchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
@@ -151,34 +134,6 @@ public class ConfigActivity extends AppCompatActivity {
         }
     };
 
-
-    private BeaconScanCallback beaconScanCallback = new BeaconScanCallback() {
-        @Override
-        public void onStartScan() {
-            mProgDialog = new ProgressDialog(ConfigActivity.this);
-            mProgDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-            mProgDialog.setMessage("Now Scanning");
-            mProgDialog.setCanceledOnTouchOutside(false);
-            mProgDialog.setCancelable(true);
-            mProgDialog.show();
-        }
-
-
-        @Override
-        public void onScanned(BeaconList<BluetoothBeacon> btBeaconList, BeaconList<WifiBeacon> wifiBeaconList) {
-            mProgDialog.dismiss();
-            Toast.makeText(ConfigActivity.this, String.format("Scan Complete: BT(%d), Wifi(%d)", btBeaconList.size(), wifiBeaconList.size()), Toast.LENGTH_SHORT).show();
-            Point point = mIntensityMap.getPinImageCoordPosition();
-            Sample sample = new Sample(point.x, point.y, btBeaconList, wifiBeaconList);
-            mSampleBuffer.add(sample);
-        }
-
-
-        @Override
-        public void onScanFailed() {
-            Log.e(TAG, "error scan");
-        }
-    };
 
     private CompoundButton.OnCheckedChangeListener locksMapCheckedChangeListner = new CompoundButton.OnCheckedChangeListener() {
         @Override
@@ -219,6 +174,33 @@ public class ConfigActivity extends AppCompatActivity {
                 path.lineTo(p2.x, p2.y);
                 canvas.drawPath(path, paint);
             }
+        }
+    };
+
+
+    private BeaconScanCallback beaconScanCallback = new BeaconScanCallback() {
+        @Override
+        public void onStartScan() {
+            mProgDialog = new ProgressDialog(ConfigActivity.this);
+            mProgDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            mProgDialog.setMessage("Now Scanning");
+            mProgDialog.setCanceledOnTouchOutside(false);
+            mProgDialog.setCancelable(true);
+            mProgDialog.show();
+        }
+
+        @Override
+        public void onScanned(BeaconList<BluetoothBeacon> btBeaconList, BeaconList<WifiBeacon> wifiBeaconList) {
+            mProgDialog.dismiss();
+            Toast.makeText(ConfigActivity.this, String.format("Scan Complete: BT(%d), Wifi(%d)", btBeaconList.size(), wifiBeaconList.size()), Toast.LENGTH_SHORT).show();
+            Point point = mIntensityMap.getPinImageCoordPosition();
+            Sample sample = new Sample(point.x, point.y, btBeaconList, wifiBeaconList);
+            mSampleBuffer.add(sample);
+        }
+
+        @Override
+        public void onScanFailed() {
+
         }
     };
 }

@@ -1,31 +1,33 @@
 package jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth;
 
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
+import android.content.Context;
 import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.BeaconList;
-import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothBeacon;
 
 /**
  * Created by yuuki on 10/6/15.
  */
-public class BluetoothScanCallback extends ScanCallback{
-    private static final String TAG = BluetoothScanCallback.class.getSimpleName();
+public class BluetoothScanManager extends ScanCallback{
+    private static final String TAG = BluetoothScanManager.class.getSimpleName();
     private BeaconList<BluetoothBeacon> mBtBeaconList;
     private BluetoothLeScanner mBtScanner;
     private List<ScanFilter> mBtFilterList;
     private ScanSettings mBtSettings;
     private boolean mIsScannning;
-    public BluetoothScanCallback(BluetoothLeScanner btScanner){
-        mBtScanner = btScanner;
+    public BluetoothScanManager(Context context){
+        BluetoothManager btManager = (BluetoothManager)context.getSystemService(Context.BLUETOOTH_SERVICE);
+        mBtScanner = btManager.getAdapter().getBluetoothLeScanner();
         mIsScannning = false;
         mBtFilterList = new ArrayList<>();
         mBtFilterList.add(new ScanFilter.Builder().build());
