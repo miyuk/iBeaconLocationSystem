@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothBeacon;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;
 
 /**
  * Created by yuuki on 10/21/15.
@@ -47,17 +48,26 @@ public class SampleList extends ArrayList<Sample> {
     }
 
     public boolean save(String path) {
-        File csv = new File(path);
-        csv.getParentFile().mkdirs();
-        if (!csv.exists()) {
+        File btCsv = new File(path + ".bt");
+        File wifiCsv = new File(path + ".wifi");
+        btCsv.getParentFile().mkdirs();
+        if (!btCsv.exists()) {
             try {
-                csv.createNewFile();
+                btCsv.createNewFile();
             } catch (Exception e) {
                 e.printStackTrace();
                 return false;
             }
         }
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(csv, false))) {
+        if (!wifiCsv.exists()) {
+            try {
+                wifiCsv.createNewFile();
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(btCsv, false))) {
             for (Sample sample : this) {
                 StringBuffer buffer = new StringBuffer();
                 buffer.append(String.format("%d,%d", sample.x, sample.y));
@@ -69,10 +79,26 @@ public class SampleList extends ArrayList<Sample> {
             }
             writer.flush();
             writer.close();
-            return true;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(wifiCsv, false))) {
+            for (Sample sample : this) {
+                StringBuffer buffer = new StringBuffer();
+                buffer.append(String.format("%d,%d", sample.x, sample.y));
+                for (WifiBeacon beacon : sample.getWifiBeaconList()) {
+                    buffer.append(String.format(",%s,%d", beacon.getMacAddress(), beacon.getRssi()));
+                }
+                buffer.append("\n");
+                writer.write(buffer.toString());
+            }
+            writer.flush();
+            writer.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
     }
 }

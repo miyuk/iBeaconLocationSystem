@@ -2,6 +2,7 @@ package jp.ac.oit.elc.mail.ibeaconlocationsystem;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import java.util.Date;
 
@@ -12,7 +13,7 @@ import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiScanManager;
  * Created by yuuki on 10/6/15.
  */
 public class BeaconScanner{
-    private static final long DEFAULT_SCAN_TIMEOUT_MILLIS = 2000;
+    private static final long DEFAULT_SCAN_TIMEOUT_MILLIS = 3000;
     private BluetoothScanManager mBtScanManager;
     private WifiScanManager mWifiScanManager;
     private boolean mStarted = false;
@@ -80,6 +81,11 @@ public class BeaconScanner{
                     Thread.sleep(DEFAULT_SCAN_TIMEOUT_MILLIS);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
+                }
+                while(true){
+                    if(mLastCheckTime.before(mBtScanManager.getUpdatedTime()) && mLastCheckTime.before(mWifiScanManager.getUpdatedTime())){
+                        break;
+                    }
                 }
             }
             mBtScanManager.stopScan();

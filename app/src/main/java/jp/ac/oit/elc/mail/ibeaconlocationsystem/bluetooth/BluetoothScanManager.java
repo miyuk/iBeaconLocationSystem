@@ -31,7 +31,7 @@ public class BluetoothScanManager extends ScanCallback{
         mBtScanner = btManager.getAdapter().getBluetoothLeScanner();
         mBtFilterList = new ArrayList<>();
         mBtFilterList.add(new ScanFilter.Builder().build());
-        mBtSettings = new ScanSettings.Builder().build();
+        mBtSettings = new ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build();
     }
 
     public void startScan(){

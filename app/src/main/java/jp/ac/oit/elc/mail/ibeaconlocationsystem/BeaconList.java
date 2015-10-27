@@ -1,12 +1,13 @@
 package jp.ac.oit.elc.mail.ibeaconlocationsystem;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 
 /**
  * Created by yuuki on 10/6/15.
  */
-public class BeaconList<T extends BeaconBase> extends HashSet<T> {
+public class BeaconList<T extends BeaconBase> extends ArrayList<T> {
 
     public T getByMacAddress(String macAddress) {
         for (T item : this) {
@@ -21,7 +22,8 @@ public class BeaconList<T extends BeaconBase> extends HashSet<T> {
 
     public Date getUpdatedTime() {
         Date result = new Date(0);
-        for (T beacon : this) {
+        for (int i = 0; i < this.size() - 1; i++) {
+            T beacon = this.get(i);
             Date time = beacon.getUpdatedTime();
             if (time.after(result)) {
                 result = time;

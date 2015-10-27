@@ -3,11 +3,9 @@ package jp.ac.oit.elc.mail.ibeaconlocationsystem.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
-import jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.R;
 
 public class MenuActivity extends AppCompatActivity {
@@ -28,7 +26,7 @@ public class MenuActivity extends AppCompatActivity {
         mButtonStartConfig.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(v.getContext(), ConfigActivity.class);
+                Intent intent = new Intent(v.getContext(), ConfigureActivity.class);
                 startActivity(intent);
             }
         });

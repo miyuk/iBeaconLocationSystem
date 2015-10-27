@@ -7,9 +7,12 @@ import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
+import android.media.AudioManager;
+import android.media.effect.Effect;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
+import android.view.SoundEffectConstants;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -33,8 +36,8 @@ import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;
 
 import static jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment.INTENSITY_MAP_PATH;
 
-public class ConfigActivity extends AppCompatActivity {
-    private static final String TAG = ConfigActivity.class.getSimpleName();
+public class ConfigureActivity extends AppCompatActivity {
+    private static final String TAG = ConfigureActivity.class.getSimpleName();
     private BeaconScanner mBeaconScanner;
     private Button mButtonStart;
     private Button mButtonStep;
@@ -45,35 +48,47 @@ public class ConfigActivity extends AppCompatActivity {
     private ProgressDialog mProgDialog;
     private List<Point[]> mSetPoints;
     private SampleList mSampleBuffer;
-    private boolean isStart;
+    private boolean started;
+    private int count;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_config);
+        setContentView(R.layout.activity_configure);
         initViews();
         mBeaconScanner = new BeaconScanner(this);
         mSetPoints = new ArrayList<>();
         mSampleBuffer = new SampleList();
+
     }
 
     private void initViews() {
         mButtonStart = (Button) findViewById(R.id.buttonStart);
         mButtonStep = (Button) findViewById(R.id.buttonStep);
-        mButtonSave = (Button)findViewById(R.id.buttonSave);
+        mButtonSave = (Button) findViewById(R.id.buttonSave);
         mToggleLockMap = (CheckBox) findViewById(R.id.toggleLockMap);
         mTextStatus = (TextView) findViewById(R.id.textStatus);
         mIntensityMap = (IntensityMapView) findViewById(R.id.intensityMapView);
         mButtonStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!isStart) {
+                if (!started) {
                     mButtonStart.setEnabled(false);
                     mButtonStep.setEnabled(true);
                     mButtonSave.setEnabled(false);
                     mSetPoints.add(new Point[2]);
                     mSetPoints.get(mSetPoints.size() - 1)[0] = mIntensityMap.getPinImageCoordPosition();
-                    mBeaconScanner.startScan(beaconScanCallback);
-                    isStart = true;
+                    mProgDialog = new ProgressDialog(ConfigureActivity.this);
+                    mProgDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                    mProgDialog.setMessage("Now Scanning");
+                    mProgDialog.setCanceledOnTouchOutside(false);
+                    mProgDialog.setCancelable(true);
+                    mProgDialog.show();
+                    count = 0;
+                    for (int i = 0; i < 10; i++) {
+                        mBeaconScanner.startScan(beaconScanCallback);
+                    }
+                    started = true;
 
                     mButtonStart.setText("Stop");
                 } else {
@@ -83,14 +98,23 @@ public class ConfigActivity extends AppCompatActivity {
                     mButtonStart.setEnabled(true);
                     mButtonStep.setEnabled(false);
                     mButtonSave.setEnabled(true);
-                    isStart = false;
+                    started = false;
                 }
             }
         });
         mButtonStep.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mBeaconScanner.startScan(beaconScanCallback);
+                mProgDialog = new ProgressDialog(ConfigureActivity.this);
+                mProgDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                mProgDialog.setMessage("Now Scanning");
+                mProgDialog.setCanceledOnTouchOutside(false);
+                mProgDialog.setCancelable(false);
+                mProgDialog.show();
+                count = 0;
+                for (int i = 0; i < 10; i++) {
+                    mBeaconScanner.startScan(beaconScanCallback);
+                }
                 mButtonStart.setEnabled(true);
                 mButtonStep.setEnabled(true);
                 mButtonSave.setEnabled(false);
@@ -99,10 +123,10 @@ public class ConfigActivity extends AppCompatActivity {
         mButtonSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(saveIntensityMap()){
-                    Toast.makeText(ConfigActivity.this, "Save Success", Toast.LENGTH_SHORT).show();
-                }else{
-                    Toast.makeText(ConfigActivity.this, "Save Failed", Toast.LENGTH_SHORT).show();
+                if (saveIntensityMap()) {
+                    Toast.makeText(ConfigureActivity.this, "Save Success", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(ConfigureActivity.this, "Save Failed", Toast.LENGTH_SHORT).show();
 
                 }
             }
@@ -118,10 +142,11 @@ public class ConfigActivity extends AppCompatActivity {
         Point sp = lastSet[0];
         Point ep = lastSet[1];
         Point offset = new Point(ep.x - sp.x, ep.y - sp.y);
-        int numPoints = mSampleBuffer.size() - 1;
-        for (int i = 0; i <= numPoints; i++) {
-            int x = sp.x + (offset.x * i / numPoints);
-            int y = sp.y + (offset.y * i / numPoints);
+        int numPoints = mSampleBuffer.size() / 10 - 1;
+        for (int i = 0; i <= mSampleBuffer.size() - 1; i++) {
+            int j = i / 10;
+            int x = sp.x + (offset.x * j / numPoints);
+            int y = sp.y + (offset.y * j / numPoints);
             Sample sample = mSampleBuffer.get(i);
             sample.x = x;
             sample.y = y;
@@ -193,25 +218,41 @@ public class ConfigActivity extends AppCompatActivity {
     private BeaconScanCallback beaconScanCallback = new BeaconScanCallback() {
         @Override
         public void onStartScan() {
-            mProgDialog = new ProgressDialog(ConfigActivity.this);
-            mProgDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-            mProgDialog.setMessage("Now Scanning");
-            mProgDialog.setCanceledOnTouchOutside(false);
-            mProgDialog.setCancelable(true);
-            mProgDialog.show();
+//            progDialog = new ProgressDialog(ConfigureActivity.this);
+//            progDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+//            progDialog.setMessage("Now Scanning");
+//            progDialog.setCanceledOnTouchOutside(false);
+//            progDialog.setCancelable(true);
+//            progDialog.show();
         }
+        int ii = 0;
 
         @Override
         public void onScanTimeout(BeaconList<BluetoothBeacon> btBeacons, BeaconList<WifiBeacon> wifiBeacons) {
-            mProgDialog.dismiss();
-            Toast.makeText(ConfigActivity.this, String.format("Scan Complete: BT(%d), Wifi(%d)", btBeacons.size(), wifiBeacons.size()), Toast.LENGTH_SHORT).show();
+            if (++count == 10) {
+                mProgDialog.dismiss();
+                ii++;
+
+            }
+            AudioManager manager = (AudioManager)getSystemService(AUDIO_SERVICE);
+            manager.playSoundEffect(AudioManager.FX_KEY_CLICK);
+//            progDialog.dismiss();
+
+            Toast.makeText(ConfigureActivity.this, String.format("%d Scan Complete: BT(%d), Wifi(%d)", count, btBeacons.size(), wifiBeacons.size()), Toast.LENGTH_SHORT).show();
             Point point = mIntensityMap.getPinImageCoordPosition();
             Sample sample = new Sample(point.x, point.y, btBeacons, wifiBeacons);
             mSampleBuffer.add(sample);
+            if(count == 10 && ii < 2){
+                mButtonStep.performClick();
+            }else if(count == 10 && ii == 2){
+                ii = 0;
+            }
+
         }
 
         @Override
-        public void onScanFailed() {
+        public void onUpdateScanResult(BeaconList<BluetoothBeacon> btBeacons, BeaconList<WifiBeacon> wifiBeacons) {
+            super.onUpdateScanResult(btBeacons, wifiBeacons);
         }
     };
 

@@ -25,7 +25,7 @@ public class WifiScanManager extends BroadcastReceiver {
 
     public WifiScanManager(Context context) {
         super();
-        mContext = context;
+        mContext = context.getApplicationContext();
         mWifiManager = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
         mWifiFilter = new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
 
