@@ -2,6 +2,8 @@ package jp.ac.oit.elc.mail.ibeaconlocationsystem.classification;
 
 import android.util.Log;
 
+import java.util.Date;
+
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.SampleList;
 import weka.classifiers.functions.MultilayerPerceptron;
 import weka.core.Instances;
@@ -17,7 +19,6 @@ public class LocationClassifier {
 
     public LocationClassifier(String wekahome) {
         weka.core.Environment.getSystemWide().addVariable("WEKA_HOME", wekahome);
-        Log.d(TAG, wekahome);
         mInstances = new LocationInstances();
         mBackProp = new MultilayerPerceptron();
     }
@@ -33,10 +34,13 @@ public class LocationClassifier {
 
     public void build() {
         try {
-            mBackProp.setHiddenLayers("a");
-            mBackProp.setTrainingTime(1000);
-            mBackProp.setLearningRate(0.1);
+            Log.d(TAG, "Start Classification");
+            //mBackProp.setHiddenLayers("a");
+//            mBackProp.setTrainingTime(1000);
+//            mBackProp.setLearningRate(0.1);
             mBackProp.buildClassifier(mInstances);
+            Log.d(TAG, "Stoop Classification");
+            Log.d(TAG, mBackProp.toString());
         } catch (Exception e) {
             e.printStackTrace();
         }

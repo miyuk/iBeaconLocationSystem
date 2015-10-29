@@ -24,7 +24,7 @@ import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;
 public class IntensityMapView extends ImageViewTouch {
     private static final String TAG = IntensityMapView.class.getSimpleName();
     private static final float SCAN_POINT_CENTER_RADIUS = 1.0F;
-    private static final float SCAN_POINT_EXPECTED_RANGE = SCAN_POINT_CENTER_RADIUS * 8;
+    private static final float SCAN_POINT_EXPECTED_RANGE = SCAN_POINT_CENTER_RADIUS * 4;
     private Paint mExpectedRangePaint;
     private Paint mPointCenterPaint;
     private SampleList mSampleList;
@@ -138,6 +138,9 @@ public class IntensityMapView extends ImageViewTouch {
         return CoordinateUtil.screenToImage(screenX, screenY, getImageViewMatrix());
     }
     public Point screenToImageCoord(Point screenPoint){
+        if(screenPoint == null){
+            return null;
+        }
         return screenToImageCoord(screenPoint.x, screenPoint.y);
     }
 
@@ -146,5 +149,9 @@ public class IntensityMapView extends ImageViewTouch {
     }
     public Point imageToScreenCoord(Point imagePoint){
         return imageToScreenCoord(imagePoint.x, imagePoint.y);
+    }
+
+    public interface OnDrawListener {
+        void onDraw(Canvas canvas);
     }
 }

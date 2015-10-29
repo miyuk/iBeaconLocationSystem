@@ -5,6 +5,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
@@ -47,55 +48,41 @@ public class SampleList extends ArrayList<Sample> {
         }
     }
 
-    public boolean save(String path) {
-        File btCsv = new File(path + ".bt");
-        File wifiCsv = new File(path + ".wifi");
-        btCsv.getParentFile().mkdirs();
-        if (!btCsv.exists()) {
+    public boolean saveToCsv(String btPath, String wifiPath) {
+        StringBuffer btBuffer = new StringBuffer();
+        StringBuffer wifiBuffer = new StringBuffer();
+        for (Sample sample : this) {
+            btBuffer.append(String.format("%d,%d", sample.x, sample.y));
+            for (BluetoothBeacon beacon : sample.getBtBeaconList()) {
+                btBuffer.append(String.format(",%s,%d", beacon.getMacAddress(), beacon.getRssi()));
+            }
+            btBuffer.append("\n");
+
+            wifiBuffer.append(String.format("%d,%d", sample.x, sample.y));
+            for (WifiBeacon beacon : sample.getWifiBeaconList()) {
+                wifiBuffer.append(String.format(",%s,%d", beacon.getMacAddress(), beacon.getRssi()));
+            }
+            wifiBuffer.append("\n");
+        }
+        return save(btPath, btBuffer.toString(), false) && save(wifiPath, wifiBuffer.toString(), false);
+    }
+
+    private static boolean save(String path, String text, boolean append) {
+        File file = new File(path);
+        if (!file.exists()) {
             try {
-                btCsv.createNewFile();
-            } catch (Exception e) {
+                file.getParentFile().mkdirs();
+                file.createNewFile();
+            } catch (IOException e) {
                 e.printStackTrace();
                 return false;
             }
         }
-        if (!wifiCsv.exists()) {
-            try {
-                wifiCsv.createNewFile();
-            } catch (Exception e) {
-                e.printStackTrace();
-                return false;
-            }
-        }
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(btCsv, false))) {
-            for (Sample sample : this) {
-                StringBuffer buffer = new StringBuffer();
-                buffer.append(String.format("%d,%d", sample.x, sample.y));
-                for (BluetoothBeacon beacon : sample.getBtBeaconList()) {
-                    buffer.append(String.format(",%s,%d", beacon.getMacAddress(), beacon.getRssi()));
-                }
-                buffer.append("\n");
-                writer.write(buffer.toString());
-            }
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file, append))) {
+            writer.write(text);
             writer.flush();
             writer.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(wifiCsv, false))) {
-            for (Sample sample : this) {
-                StringBuffer buffer = new StringBuffer();
-                buffer.append(String.format("%d,%d", sample.x, sample.y));
-                for (WifiBeacon beacon : sample.getWifiBeaconList()) {
-                    buffer.append(String.format(",%s,%d", beacon.getMacAddress(), beacon.getRssi()));
-                }
-                buffer.append("\n");
-                writer.write(buffer.toString());
-            }
-            writer.flush();
-            writer.close();
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
             return false;
         }

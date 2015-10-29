@@ -33,8 +33,4 @@ public abstract class BeaconBase {
         mUpdatedTime = new Date();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        return mMacAddress.equals(o);
-    }
 }

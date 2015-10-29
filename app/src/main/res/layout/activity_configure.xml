@@ -1,77 +1,139 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="wrap_content"
-    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainActivity">
+    tools:context=".MainActivity">
 
     <LinearLayout
-        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
         <jp.ac.oit.elc.mail.ibeaconlocationsystem.view.IntensityMapView
+            android:id="@+id/intensityMapView"
             android:layout_width="match_parent"
-            android:layout_height="400dp"
-            android:id="@+id/intensityMapView" />
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
         <LinearLayout
-            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1">
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
             <Button
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="Start"
                 android:id="@+id/buttonStart"
-                android:layout_below="@+id/intensityMapView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
-                android:layout_weight="1" />
+                android:layout_below="@+id/intensityMapView"
+                android:layout_weight="1"
+                android:text="Start" />
 
             <Button
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="Step"
                 android:id="@+id/buttonStep"
-                android:layout_below="@+id/intensityMapView"
-                android:layout_toEndOf="@+id/buttonSet"
-                android:layout_weight="1"
-                android:enabled="false" />
-
-            <Button
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Save"
-                android:id="@+id/buttonSave"
                 android:layout_below="@+id/intensityMapView"
                 android:layout_toEndOf="@+id/buttonSet"
                 android:layout_weight="1"
-                android:enabled="false" />
+                android:enabled="false"
+                android:text="Step" />
+
+            <Button
+                android:id="@+id/buttonSave"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/intensityMapView"
+                android:layout_toEndOf="@+id/buttonSet"
+                android:layout_weight="1"
+                android:enabled="false"
+                android:text="Save" />
 
             <CheckBox
+                android:id="@+id/toggleLockMap"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Lock"
-                android:id="@+id/toggleLockMap"
-                android:layout_alignParentStart="false"
                 android:layout_alignBaseline="@+id/buttonSet"
+                android:layout_alignParentStart="false"
                 android:layout_toEndOf="@+id/buttonStep"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                android:text="Lock" />
         </LinearLayout>
 
-        <TextView
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:text="Status"
-            android:id="@+id/textStatus"
-            android:layout_below="@+id/buttonSet"
-            android:layout_centerHorizontal="true"
-            android:layout_alignParentBottom="true"
-            android:layout_weight="1"
-            android:gravity="center_vertical" />
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/textView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Scan Count: "
+                    android:layout_gravity="center_vertical" />
+
+                <EditText
+                    android:id="@+id/editScanCount"
+                    android:layout_width="40dp"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:inputType="number"
+                    android:maxLength="2"
+                    android:text="1"
+                    android:textAlignment="textEnd" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/textView2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Pin Location: "
+                    android:layout_gravity="center_vertical" />
+
+                <TextView
+                    android:id="@+id/textLocation"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/textView3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Status: "
+                android:layout_gravity="center_vertical" />
+
+            <TextView
+                android:id="@+id/textStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+        </LinearLayout>
 
     </LinearLayout>
 
