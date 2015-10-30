@@ -44,7 +44,7 @@ public class SampleList extends ArrayList<Sample> {
             int y = Integer.parseInt(btLine[1]);
             BeaconList<BluetoothBeacon> btList = new BeaconList<>();
             BeaconList<WifiBeacon> wifiList = new BeaconList<>();
-            for(int j = 2; j < btLine.length; i += 2){
+            for(int j = 2; j < btLine.length; j += 2){
                 String btMac = btLine[j];
                 int btRssi = Integer.parseInt(btLine[j + 1]);
                 String wifiMac = btLine[j];
@@ -73,13 +73,13 @@ public class SampleList extends ArrayList<Sample> {
             e.printStackTrace();
             return null;
         }
-        return (String[][])result.toArray();
+        return result.toArray(new String[][]{});
     }
     public List<Point> getPositionList(){
         List<Point> result = new ArrayList<>();
         for (Sample sample : this){
             Point position = sample.getPosition();
-            if (result.contains(position)){
+            if (!result.contains(position)){
                 result.add(position);
             }
         }

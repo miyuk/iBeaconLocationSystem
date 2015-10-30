@@ -2,8 +2,6 @@ package jp.ac.oit.elc.mail.ibeaconlocationsystem.classification;
 
 import android.util.Log;
 
-import java.util.Date;
-
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.SampleList;
 import weka.classifiers.functions.MultilayerPerceptron;
 import weka.core.Instances;
@@ -23,13 +21,13 @@ public class LocationClassifier {
         mBackProp = new MultilayerPerceptron();
     }
 
-    public boolean load(String path) {
-        SampleList samples = SampleList.load(path);
-        if (samples == null) {
-            return false;
-        }
-        return mInstances.setDataSet(samples);
-    }
+//    public boolean load(String path) {
+//        SampleList samples = SampleList.loadFromCsv(path);
+//        if (samples == null) {
+//            return false;
+//        }
+//        return mInstances.setDataSet(samples);
+//    }
 
 
     public void build() {

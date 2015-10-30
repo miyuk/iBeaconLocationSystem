@@ -11,8 +11,9 @@ import jp.ac.oit.elc.mail.ibeaconlocationsystem.R;
 public class MenuActivity extends AppCompatActivity {
 
     private static final String TAG = MenuActivity.class.getSimpleName();
-    private Button mButtonStartConfig;
+    private Button mButtonStartMeasure;
     private Button mButtonStartLocate;
+    private Button mButtonStartEvaluate;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -21,9 +22,10 @@ public class MenuActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        mButtonStartConfig = (Button) findViewById(R.id.buttonStartConfig);
+        mButtonStartMeasure = (Button) findViewById(R.id.buttonStartMeasure);
         mButtonStartLocate = (Button) findViewById(R.id.buttonStartLocate);
-        mButtonStartConfig.setOnClickListener(new View.OnClickListener() {
+        mButtonStartEvaluate = (Button) findViewById(R.id.buttonStartEvaluate);
+        mButtonStartMeasure.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(v.getContext(), MeasurementActivity.class);
@@ -34,6 +36,13 @@ public class MenuActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(v.getContext(), LocationAcitivity.class);
+                startActivity(intent);
+            }
+        });
+        mButtonStartEvaluate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(v.getContext(), EvaluationActivity.class);
                 startActivity(intent);
             }
         });

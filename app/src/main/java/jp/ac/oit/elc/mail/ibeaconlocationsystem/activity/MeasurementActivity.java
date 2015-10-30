@@ -34,8 +34,8 @@ import jp.ac.oit.elc.mail.ibeaconlocationsystem.view.IntensityMapView;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeaconScanner;
 
-import static jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment.BT_INTENSITY_MAP_PATH;
-import static jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment.WIFI_INTENSITY_MAP_PATH;
+import static jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment.BT_TRAINING_CSV;
+import static jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment.WIFI_TRAINING_CSV;
 
 public class MeasurementActivity extends AppCompatActivity {
     private static final String TAG = MeasurementActivity.class.getSimpleName();
@@ -193,7 +193,7 @@ public class MeasurementActivity extends AppCompatActivity {
     private View.OnClickListener onSaveButtonClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            if (mIntensityMap.getSampleList().saveToCsv(BT_INTENSITY_MAP_PATH, WIFI_INTENSITY_MAP_PATH)) {
+            if (mIntensityMap.getSampleList().saveToCsv(BT_TRAINING_CSV, WIFI_TRAINING_CSV)) {
                 Toast.makeText(MeasurementActivity.this, "Save Success", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(MeasurementActivity.this, "Save Failed", Toast.LENGTH_SHORT).show();

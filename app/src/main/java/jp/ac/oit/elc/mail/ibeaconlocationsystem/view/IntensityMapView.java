@@ -23,7 +23,7 @@ import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;
  */
 public class IntensityMapView extends ImageViewTouch {
     private static final String TAG = IntensityMapView.class.getSimpleName();
-    private static final float SCAN_POINT_CENTER_RADIUS = 1.0F;
+    private static final float SCAN_POINT_CENTER_RADIUS = 2.0F;
     private static final float SCAN_POINT_EXPECTED_RANGE = SCAN_POINT_CENTER_RADIUS * 4;
     private Paint mExpectedRangePaint;
     private Paint mPointCenterPaint;
@@ -79,12 +79,14 @@ public class IntensityMapView extends ImageViewTouch {
             canvas.drawBitmap(mPinBmp, mPinPosition.x + mPinOffset.x, mPinPosition.y + mPinOffset.y, new Paint());
         }
         //draw addSample list
-        for (Point position : mSampleList.getPositionList()) {
-            Point point = CoordinateUtil.imageToScreen(position.x, position.y, getImageViewMatrix());
-            canvas.drawCircle(point.x, point.y, SCAN_POINT_EXPECTED_RANGE * getScale(), mExpectedRangePaint);
-            canvas.drawCircle(point.x, point.y, SCAN_POINT_CENTER_RADIUS * getScale(), mPointCenterPaint);
+        if (mSampleList != null) {
+            for (Point position : mSampleList.getPositionList()) {
+                Point point = CoordinateUtil.imageToScreen(position.x, position.y, getImageViewMatrix());
+                canvas.drawCircle(point.x, point.y, SCAN_POINT_EXPECTED_RANGE * getScale(), mExpectedRangePaint);
+                canvas.drawCircle(point.x, point.y, SCAN_POINT_CENTER_RADIUS * getScale(), mPointCenterPaint);
+            }
         }
-        if(mOnDrawListener != null){
+        if (mOnDrawListener != null) {
             mOnDrawListener.onDraw(canvas);
         }
     }
@@ -98,9 +100,10 @@ public class IntensityMapView extends ImageViewTouch {
         return mPinPosition;
     }
 
-    public Point getPinImageCoordPosition(){
+    public Point getPinImageCoordPosition() {
         return screenToImageCoord(mPinPosition);
     }
+
     public void setUserPosition(int x, int y) {
         mPinPosition.set(x, y);
         invalidate();
@@ -131,23 +134,26 @@ public class IntensityMapView extends ImageViewTouch {
         invalidate();
     }
 
-    public void setOnDrawListener(OnDrawListener onDrawListener){
+    public void setOnDrawListener(OnDrawListener onDrawListener) {
         mOnDrawListener = onDrawListener;
     }
+
     public Point screenToImageCoord(int screenX, int screenY) {
         return CoordinateUtil.screenToImage(screenX, screenY, getImageViewMatrix());
     }
-    public Point screenToImageCoord(Point screenPoint){
-        if(screenPoint == null){
+
+    public Point screenToImageCoord(Point screenPoint) {
+        if (screenPoint == null) {
             return null;
         }
         return screenToImageCoord(screenPoint.x, screenPoint.y);
     }
 
-    public Point imageToScreenCoord(int x, int y){
+    public Point imageToScreenCoord(int x, int y) {
         return CoordinateUtil.imageToScreen(x, y, getImageViewMatrix());
     }
-    public Point imageToScreenCoord(Point imagePoint){
+
+    public Point imageToScreenCoord(Point imagePoint) {
         return imageToScreenCoord(imagePoint.x, imagePoint.y);
     }
 

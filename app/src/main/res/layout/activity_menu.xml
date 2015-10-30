@@ -15,13 +15,20 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Config"
-            android:id="@+id/buttonStartConfig" />
+            android:text="Measure"
+            android:id="@+id/buttonStartMeasure" />
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Locate"
             android:id="@+id/buttonStartLocate" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Evaluate"
+            android:id="@+id/buttonStartEvaluate" />
+
     </LinearLayout>
 </RelativeLayout>
