@@ -37,8 +37,8 @@ import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeaconScanner;
 import static jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment.BT_INTENSITY_MAP_PATH;
 import static jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment.WIFI_INTENSITY_MAP_PATH;
 
-public class ConfigureActivity extends AppCompatActivity {
-    private static final String TAG = ConfigureActivity.class.getSimpleName();
+public class MeasurementActivity extends AppCompatActivity {
+    private static final String TAG = MeasurementActivity.class.getSimpleName();
 
     //view
     private Button mButtonStart;
@@ -67,7 +67,7 @@ public class ConfigureActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_configure);
+        setContentView(R.layout.activity_measurement);
         mBtScanner = new BluetoothBeaconScanner(this);
         mWifiScanner = new WifiBeaconScanner(this);
         mStartStopPoints = new ArrayList<>();
@@ -194,9 +194,9 @@ public class ConfigureActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             if (mIntensityMap.getSampleList().saveToCsv(BT_INTENSITY_MAP_PATH, WIFI_INTENSITY_MAP_PATH)) {
-                Toast.makeText(ConfigureActivity.this, "Save Success", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MeasurementActivity.this, "Save Success", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(ConfigureActivity.this, "Save Failed", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MeasurementActivity.this, "Save Failed", Toast.LENGTH_SHORT).show();
             }
         }
     };
@@ -288,7 +288,7 @@ public class ConfigureActivity extends AppCompatActivity {
         public BeaconScanAsyncTask(int scanCount) {
             super();
             this.scanCount = scanCount;
-            progDialog = new ProgressDialog(ConfigureActivity.this);
+            progDialog = new ProgressDialog(MeasurementActivity.this);
             progDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
             progDialog.setMax(scanCount);
             progDialog.setProgress(0);
@@ -310,7 +310,7 @@ public class ConfigureActivity extends AppCompatActivity {
             int count = values[0].first;
             int numBt = values[0].second[0].size();
             int numWifi = values[0].second[1].size();
-            Toast.makeText(ConfigureActivity.this,
+            Toast.makeText(MeasurementActivity.this,
                     String.format("%d times scan complete: BT(%d), WiFi(%d)", count, numBt, numWifi),
                     Toast.LENGTH_SHORT).show();
             progDialog.setProgress(count);
@@ -325,7 +325,7 @@ public class ConfigureActivity extends AppCompatActivity {
         @Override
         protected void onCancelled(Void aVoid) {
             super.onCancelled(aVoid);
-            Toast.makeText(ConfigureActivity.this, "cancelled", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MeasurementActivity.this, "cancelled", Toast.LENGTH_SHORT).show();
             progDialog.dismiss();
         }
 
