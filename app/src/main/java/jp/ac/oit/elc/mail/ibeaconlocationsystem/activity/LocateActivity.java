@@ -5,7 +5,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
 
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.BeaconList;
-import jp.ac.oit.elc.mail.ibeaconlocationsystem.BeaconScanCallback;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.R;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.SampleList;
@@ -40,16 +39,4 @@ public class LocateActivity extends AppCompatActivity {
         mTextStatus = (TextView) findViewById(R.id.textStatus);
         mIntensityMapView.setImageResource(R.mipmap.floor_map);
     }
-    private BeaconScanCallback beaconScanCallback = new BeaconScanCallback() {
-        @Override
-        public void onStartScan() {
-            mTextStatus.setText("Start Scan");
-        }
-
-        @Override
-        public void onScanTimeout(BeaconList<BluetoothBeacon> btBeacons, BeaconList<WifiBeacon> wifiBeacons) {
-
-        }
-
-    };
 }
