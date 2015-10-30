@@ -1,5 +1,7 @@
 package jp.ac.oit.elc.mail.ibeaconlocationsystem;
 
+import android.graphics.Point;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -7,6 +9,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
 
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothBeacon;
@@ -48,17 +51,29 @@ public class SampleList extends ArrayList<Sample> {
         }
     }
 
+    public List<Point> getPositionList(){
+        List<Point> result = new ArrayList<>();
+        for (Sample sample : this){
+            Point position = sample.getPosition();
+            if (result.contains(position)){
+                result.add(position);
+            }
+        }
+        return result;
+    }
+
     public boolean saveToCsv(String btPath, String wifiPath) {
         StringBuffer btBuffer = new StringBuffer();
         StringBuffer wifiBuffer = new StringBuffer();
         for (Sample sample : this) {
-            btBuffer.append(String.format("%d,%d", sample.x, sample.y));
+            Point position = sample.getPosition();
+            btBuffer.append(String.format("%d,%d", position.x, position.y));
             for (BluetoothBeacon beacon : sample.getBtBeaconList()) {
                 btBuffer.append(String.format(",%s,%d", beacon.getMacAddress(), beacon.getRssi()));
             }
             btBuffer.append("\n");
 
-            wifiBuffer.append(String.format("%d,%d", sample.x, sample.y));
+            wifiBuffer.append(String.format("%d,%d", position.x, position.y));
             for (WifiBeacon beacon : sample.getWifiBeaconList()) {
                 wifiBuffer.append(String.format(",%s,%d", beacon.getMacAddress(), beacon.getRssi()));
             }
@@ -88,4 +103,6 @@ public class SampleList extends ArrayList<Sample> {
         }
         return true;
     }
+
+
 }

@@ -79,8 +79,8 @@ public class IntensityMapView extends ImageViewTouch {
             canvas.drawBitmap(mPinBmp, mPinPosition.x + mPinOffset.x, mPinPosition.y + mPinOffset.y, new Paint());
         }
         //draw addSample list
-        for (Sample sample : mSampleList) {
-            Point point = CoordinateUtil.imageToScreen(sample.x, sample.y, getImageViewMatrix());
+        for (Point position : mSampleList.getPositionList()) {
+            Point point = CoordinateUtil.imageToScreen(position.x, position.y, getImageViewMatrix());
             canvas.drawCircle(point.x, point.y, SCAN_POINT_EXPECTED_RANGE * getScale(), mExpectedRangePaint);
             canvas.drawCircle(point.x, point.y, SCAN_POINT_CENTER_RADIUS * getScale(), mPointCenterPaint);
         }
