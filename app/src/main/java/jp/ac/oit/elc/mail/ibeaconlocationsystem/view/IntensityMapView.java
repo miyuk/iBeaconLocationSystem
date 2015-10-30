@@ -9,39 +9,36 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.util.AttributeSet;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import it.sephiroth.android.library.imagezoom.ImageViewTouch;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.BeaconList;
-import jp.ac.oit.elc.mail.ibeaconlocationsystem.IntensitySample;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.R;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.Sample;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.SampleList;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothBeacon;
-import jp.ac.oit.elc.mail.ibeaconlocationsystem.utils.CoordinateUtils;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.util.CoordinateUtil;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;
 
 /**
  * Created by yuuki on 10/6/15.
  */
 public class IntensityMapView extends ImageViewTouch {
-    private static final String TAG = "IntensityMap";
+    private static final String TAG = IntensityMapView.class.getSimpleName();
     private static final float SCAN_POINT_CENTER_RADIUS = 1.0F;
-    private static final float SCAN_POINT_EXPECTED_RANGE = SCAN_POINT_CENTER_RADIUS * 8;
+    private static final float SCAN_POINT_EXPECTED_RANGE = SCAN_POINT_CENTER_RADIUS * 4;
     private Paint mExpectedRangePaint;
     private Paint mPointCenterPaint;
-    private Context mContext;
-    private List<IntensitySample> mSampleList;
+    private SampleList mSampleList;
     private Point mPinPosition;
     private Point mUserPosition;
     private Point mPinOffset;
     private Bitmap mPinBmp;
-    private Bitmap mMapBmp;
+    private OnDrawListener mOnDrawListener;
 
     @Override
     public void onWindowFocusChanged(boolean hasWindowFocus) {
         super.onWindowFocusChanged(hasWindowFocus);
-        if (mPinPosition.equals(0, 0)) {
-            mPinPosition.set((int) getCenter().x, (int) getCenter().y);
+        if (mPinPosition == null) {
+            mPinPosition = new Point((int) getCenter().x, (int) getCenter().y);
         }
     }
 
@@ -56,13 +53,15 @@ public class IntensityMapView extends ImageViewTouch {
     public IntensityMapView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         setScaleType(ScaleType.MATRIX);
-        mContext = context;
-        mSampleList = new ArrayList<>();
+        mSampleList = new SampleList();
         mPinBmp = BitmapFactory.decodeResource(getResources(), R.mipmap.location_pin);
-        mMapBmp = BitmapFactory.decodeResource(getResources(), R.mipmap.floor_map);
-        mPinPosition = new Point();
+        mPinPosition = null;
         //tip of pin is center of bottom
         mPinOffset = new Point(-mPinBmp.getWidth() / 2, -mPinBmp.getHeight());
+        initPaint();
+    }
+
+    private void initPaint() {
         mUserPosition = new Point();
         mExpectedRangePaint = new Paint();
         mExpectedRangePaint.setARGB(50, 0, 255, 255);
@@ -76,35 +75,83 @@ public class IntensityMapView extends ImageViewTouch {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         // draw pin
-        canvas.drawBitmap(mPinBmp, mPinPosition.x + mPinOffset.x, mPinPosition.y + mPinOffset.y, null);
-        //draw sample list
-        for (IntensitySample sample : mSampleList) {
-            Point point = CoordinateUtils.clientToScreenPoint(sample.x, sample.y, getImageViewMatrix());
+        if (mPinBmp != null && mPinPosition != null) {
+            canvas.drawBitmap(mPinBmp, mPinPosition.x + mPinOffset.x, mPinPosition.y + mPinOffset.y, new Paint());
+        }
+        //draw addSample list
+        for (Point position : mSampleList.getPositionList()) {
+            Point point = CoordinateUtil.imageToScreen(position.x, position.y, getImageViewMatrix());
             canvas.drawCircle(point.x, point.y, SCAN_POINT_EXPECTED_RANGE * getScale(), mExpectedRangePaint);
             canvas.drawCircle(point.x, point.y, SCAN_POINT_CENTER_RADIUS * getScale(), mPointCenterPaint);
         }
+        if(mOnDrawListener != null){
+            mOnDrawListener.onDraw(canvas);
+        }
     }
 
-    public void setPinPosition(int x, int y) {
+    public void setPinScreenCoordPosition(int x, int y) {
         mPinPosition.set(x, y);
         invalidate();
     }
 
-    public void sample(BeaconList<BluetoothBeacon> btBeaconList, BeaconList<WifiBeacon> wifiBeaconList) {
-        Point point = CoordinateUtils.screenToClientPoint(mPinPosition.x, mPinPosition.y, getImageViewMatrix());
-        IntensitySample sample = new IntensitySample(point.x, point.y, btBeaconList, wifiBeaconList);
-        sample(sample);
+    public Point getPinScreenCoordPosition() {
+        return mPinPosition;
+    }
+
+    public Point getPinImageCoordPosition(){
+        return screenToImageCoord(mPinPosition);
+    }
+    public void setUserPosition(int x, int y) {
+        mPinPosition.set(x, y);
         invalidate();
     }
 
-    public void sample(IntensitySample sample) {
+    public Point getUserPositon() {
+        return mUserPosition;
+    }
+
+    public void addSample(BeaconList<BluetoothBeacon> btBeaconList, BeaconList<WifiBeacon> wifiBeaconList) {
+        Point point = CoordinateUtil.screenToImage(mPinPosition.x, mPinPosition.y, getImageViewMatrix());
+        Sample sample = new Sample(point.x, point.y, btBeaconList, wifiBeaconList);
+        addSample(sample);
+        invalidate();
+    }
+
+    public void addSample(Sample sample) {
         mSampleList.add(sample);
         invalidate();
     }
 
-    public List<IntensitySample> getSampleList() {
+    public SampleList getSampleList() {
         return mSampleList;
     }
+
+    public void setSampleList(SampleList sampleList) {
+        mSampleList = sampleList;
+        invalidate();
+    }
+
+    public void setOnDrawListener(OnDrawListener onDrawListener){
+        mOnDrawListener = onDrawListener;
+    }
+    public Point screenToImageCoord(int screenX, int screenY) {
+        return CoordinateUtil.screenToImage(screenX, screenY, getImageViewMatrix());
+    }
+    public Point screenToImageCoord(Point screenPoint){
+        if(screenPoint == null){
+            return null;
+        }
+        return screenToImageCoord(screenPoint.x, screenPoint.y);
+    }
+
+    public Point imageToScreenCoord(int x, int y){
+        return CoordinateUtil.imageToScreen(x, y, getImageViewMatrix());
+    }
+    public Point imageToScreenCoord(Point imagePoint){
+        return imageToScreenCoord(imagePoint.x, imagePoint.y);
+    }
+
+    public interface OnDrawListener {
+        void onDraw(Canvas canvas);
+    }
 }
-
-
