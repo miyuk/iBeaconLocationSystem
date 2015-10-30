@@ -1,5 +1,7 @@
 package jp.ac.oit.elc.mail.ibeaconlocationsystem.classification;
 
+import android.graphics.Point;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +34,8 @@ public class LocationInstances extends Instances {
                     this.insertAttributeAt(new Attribute(beacon.getMacAddress()), this.numAttributes());
                 }
             }
-            String pos = String.format("%d-%d", sample.x, sample.y);
+            Point position = sample.getPosition();
+            String pos = String.format("%d-%d", position.x, position.y);
             if (!posList.contains(pos)) {
                 posList.add(pos);
             }
@@ -49,7 +52,8 @@ public class LocationInstances extends Instances {
                 int index = this.attribute(beacon.getMacAddress()).index();
                 vals[index] = convertRssiValue(beacon.getRssi());
             }
-            String tag = String.format("%d-%d", sample.x, sample.y);
+            Point position = sample.getPosition();
+            String tag = String.format("%d-%d", position.x, position.y);
             Attribute attr = this.attribute("location");
             vals[attr.index()] = attr.indexOfValue(tag);
             this.add(new DenseInstance(1.0, vals));
