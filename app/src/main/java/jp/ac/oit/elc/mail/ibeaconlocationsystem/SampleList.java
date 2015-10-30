@@ -1,6 +1,7 @@
 package jp.ac.oit.elc.mail.ibeaconlocationsystem;
 
 import android.graphics.Point;
+import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -23,34 +24,57 @@ public class SampleList extends ArrayList<Sample> {
         super();
     }
 
-    public static SampleList load(String path) {
-        File csv = new File(path);
-        if (!csv.exists()) {
+    public static SampleList loadFromCsv(String btPath, String wifiPath) {
+        SampleList result = new SampleList();
+        String[][] btCsv = loadCsv(btPath);
+        String[][] wifiCsv = loadCsv(wifiPath);
+        if(btCsv == null || wifiCsv == null){
             return null;
         }
-        SampleList result = new SampleList();
-        try (BufferedReader reader = new BufferedReader(new FileReader(csv))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                StringTokenizer token = new StringTokenizer(line, ",");
-                int x = Integer.parseInt(token.nextToken());
-                int y = Integer.parseInt(token.nextToken());
-                BeaconList<BluetoothBeacon> beaconList = new BeaconList<>();
-                while (token.countTokens() >= 2) {
-                    String mac = token.nextToken();
-                    int rssi = Integer.parseInt(token.nextToken());
-                    beaconList.add(new BluetoothBeacon(mac, rssi));
-                }
-                Sample sample = new Sample(x, y, beaconList, null);
-                result.add(sample);
+        if(btCsv.length != wifiCsv.length){
+            return null;
+        }
+        for(int i = 0; i < btCsv.length; i++){
+            String[] btLine = btCsv[i];
+            String[] wifiLine = wifiCsv[i];
+            if(!btLine[0].equals(wifiLine[0]) || !btLine[1].equals(wifiLine[1])){
+                continue;
             }
-            return result;
-        } catch (Exception e) {
+            int x = Integer.parseInt(btLine[0]);
+            int y = Integer.parseInt(btLine[1]);
+            BeaconList<BluetoothBeacon> btList = new BeaconList<>();
+            BeaconList<WifiBeacon> wifiList = new BeaconList<>();
+            for(int j = 2; j < btLine.length; i += 2){
+                String btMac = btLine[j];
+                int btRssi = Integer.parseInt(btLine[j + 1]);
+                String wifiMac = btLine[j];
+                int wifiRssi = Integer.parseInt(btLine[j + 1]);
+                btList.add(new BluetoothBeacon(btMac, btRssi));
+                wifiList.add(new WifiBeacon(null, wifiMac, wifiRssi));
+            }
+            Sample sample = new Sample(x, y, btList, wifiList);
+            result.add(sample);
+        }
+        return result;
+    }
+
+    private static String[][] loadCsv(String path){
+        File file = new File(path);
+        if (!file.exists()) {
+            return null;
+        }
+        List<String[]> result = new ArrayList<>();
+        try(BufferedReader reader = new BufferedReader(new FileReader(file))){
+            String line;
+            while((line = reader.readLine()) != null){
+                result.add(line.split(","));
+            }
+        } catch (IOException e) {
             e.printStackTrace();
             return null;
         }
+        return (String[][])result.toArray();
     }
-
     public List<Point> getPositionList(){
         List<Point> result = new ArrayList<>();
         for (Sample sample : this){
