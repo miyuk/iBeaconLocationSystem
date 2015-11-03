@@ -47,9 +47,11 @@ public class SampleList extends ArrayList<Sample> {
             for(int j = 2; j < btLine.length; j += 2){
                 String btMac = btLine[j];
                 int btRssi = Integer.parseInt(btLine[j + 1]);
-                String wifiMac = btLine[j];
-                int wifiRssi = Integer.parseInt(btLine[j + 1]);
                 btList.add(new BluetoothBeacon(btMac, btRssi));
+            }
+            for(int j = 2; j < wifiLine.length; j += 2){
+                String wifiMac = wifiLine[j];
+                int wifiRssi = Integer.parseInt(wifiLine[j + 1]);
                 wifiList.add(new WifiBeacon(null, wifiMac, wifiRssi));
             }
             Sample sample = new Sample(x, y, btList, wifiList);

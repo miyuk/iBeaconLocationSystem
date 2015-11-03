@@ -16,8 +16,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.R;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.Sample;
@@ -42,6 +42,7 @@ public class EvaluationActivity extends AppCompatActivity {
     private LocationClassifier mClassifier;
     private Map<Point, Point> mCalcPositionMap;
     private Point mSelectedPositon;
+    private boolean mLoadedEvaluation = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +56,7 @@ public class EvaluationActivity extends AppCompatActivity {
             Log.e(TAG, "can't Load Csv file");
             Toast.makeText(this, "Can't Load CSV file", Toast.LENGTH_SHORT).show();
         }
-        mCalcPositionMap = new HashMap<>();
+        mCalcPositionMap = new ConcurrentHashMap<>();
         for (Point pos : mEvalData.getPositions()) {
             mSpinnerAdapter.add(String.format("%d,%d", pos.x, pos.y));
         }
@@ -96,6 +97,7 @@ public class EvaluationActivity extends AppCompatActivity {
             protected void onPostExecute(Void aVoid) {
                 super.onPostExecute(aVoid);
                 dialog.dismiss();
+                mLoadedEvaluation = true;
                 Toast.makeText(EvaluationActivity.this, "Built Classifier", Toast.LENGTH_SHORT).show();
             }
 
@@ -127,6 +129,9 @@ public class EvaluationActivity extends AppCompatActivity {
     private IntensityMapView.OnDrawListener mOnMapDrawListener = new IntensityMapView.OnDrawListener() {
         @Override
         public void onDraw(Canvas canvas) {
+            if (!mLoadedEvaluation) {
+                return;
+            }
             for (Map.Entry<Point, Point> entry : mCalcPositionMap.entrySet()) {
                 boolean isSelected = entry.getKey().equals(mSelectedPositon);
                 Point measurePos = mIntensityMap.imageToScreenCoord(entry.getKey());
@@ -156,7 +161,7 @@ public class EvaluationActivity extends AppCompatActivity {
             if (calculated == null) {
                 return;
             }
-            double dist = Math.sqrt(Math.pow((double) (mSelectedPositon.x - calculated.x), 2) + (double) (mSelectedPositon.y - calculated.y));
+            double dist = Math.sqrt(Math.pow((double) (mSelectedPositon.x - calculated.x), 2) + Math.pow((double) (mSelectedPositon.y - calculated.y), 2));
             mTextError.setText(String.format("%.1fpx", dist));
             mIntensityMap.invalidate();
         }

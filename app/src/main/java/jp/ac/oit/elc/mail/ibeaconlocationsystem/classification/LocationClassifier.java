@@ -14,6 +14,7 @@ import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothBeacon;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;
 import weka.classifiers.Classifier;
 import weka.classifiers.bayes.BayesNet;
+import weka.classifiers.bayes.NaiveBayes;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instance;
@@ -27,9 +28,9 @@ import static jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment.WEKA_HOME;
  */
 public class LocationClassifier {
     private static final int INSTANCES_CAPACITY = 1000;
-    private static final double OUT_OF_RANGE_RSSI = -70;
-    private static final double LOWER_RSSI = -90;
-    private static final double UPPER_RSSI = -20;
+    private static final double OUT_OF_RANGE_RSSI = -80;
+    private static final double LOWER_RSSI = -100;
+    private static final double UPPER_RSSI = -0;
 
 
     private static final String TAG = LocationClassifier.class.getSimpleName();
@@ -41,7 +42,7 @@ public class LocationClassifier {
     public LocationClassifier(String name, SampleList training) {
         weka.core.Environment.getSystemWide().addVariable("WEKA_HOME", WEKA_HOME);
         init(name, training);
-        mClassifier = new BayesNet();
+        mClassifier = new NaiveBayes();
     }
 
     private void init(String name, SampleList samples) {
@@ -51,6 +52,13 @@ public class LocationClassifier {
             for (BluetoothBeacon beacon : sample.getBtBeaconList()) {
                 Attribute attr = new Attribute(beacon.getMacAddress());
                 if (!mAttributes.contains(attr)) {
+                    mAttributes.add(attr);
+                }
+            }
+            //TODO
+            for(WifiBeacon beacon : sample.getWifiBeaconList()){
+                Attribute attr = new Attribute(beacon.getMacAddress());
+                if(!mAttributes.contains(attr)){
                     mAttributes.add(attr);
                 }
             }
@@ -85,6 +93,13 @@ public class LocationClassifier {
                 values[attr.index()] = convertRssiValue(beacon.getRssi());
             }
         }
+        //TODO
+        for (WifiBeacon beacon : wifiBeacons){
+            Attribute attr = mInstances.attribute(beacon.getMacAddress());
+            if(attr != null){
+                values[attr.index()] = convertRssiValue(beacon.getRssi());
+            }
+        }
         Attribute classAttr = mInstances.attribute("class");
         if (position != null && mPositionMap.containsValue(position)) {
             values[classAttr.index()] = classAttr.indexOfValue(String.format("%d-%d", position.x, position.y));
@@ -107,6 +122,7 @@ public class LocationClassifier {
     }
 
     public Map<Point, Double> recognize(Sample sample) {
+        Log.d(TAG, String.format("Recognize: (%d,%d", sample.getPosition().x, sample.getPosition().y));
         Instance instance = makeInstance(null, sample.getBtBeaconList(), sample.getWifiBeaconList());
         instance.setDataset(mInstances);
         double[] values;
