@@ -96,6 +96,7 @@ public class MeasurementActivity extends AppCompatActivity {
         mIntensityMap.setOnTouchListener(mapTouchListener);
         mIntensityMap.setImageResource(R.mipmap.floor_map);
         mIntensityMap.setOnDrawListener(mapDrawListener);
+        mIntensityMap.setEnabledPin(true);
         mTextStatus.setText("Press Start");
     }
 

@@ -75,7 +75,7 @@ public class SampleList extends ArrayList<Sample> {
         }
         return result.toArray(new String[][]{});
     }
-    public List<Point> getPositionList(){
+    public List<Point> getPositions(){
         List<Point> result = new ArrayList<>();
         for (Sample sample : this){
             Point position = sample.getPosition();
@@ -85,7 +85,16 @@ public class SampleList extends ArrayList<Sample> {
         }
         return result;
     }
-
+    public static List<String> getMacAddresses(BeaconList<BeaconBase> list){
+        List<String> result = new ArrayList<>();
+        for (BeaconBase  beacon : list){
+            String mac = beacon.getMacAddress();
+            if(!result.contains(mac)){
+                result.add(mac);
+            }
+        }
+        return result;
+    }
     public boolean saveToCsv(String btPath, String wifiPath) {
         StringBuffer btBuffer = new StringBuffer();
         StringBuffer wifiBuffer = new StringBuffer();

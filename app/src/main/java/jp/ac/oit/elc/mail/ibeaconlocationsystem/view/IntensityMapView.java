@@ -33,6 +33,7 @@ public class IntensityMapView extends ImageViewTouch {
     private Point mPinOffset;
     private Bitmap mPinBmp;
     private OnDrawListener mOnDrawListener;
+    private boolean mEnabledPin;
 
     @Override
     public void onWindowFocusChanged(boolean hasWindowFocus) {
@@ -75,12 +76,12 @@ public class IntensityMapView extends ImageViewTouch {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         // draw pin
-        if (mPinBmp != null && mPinPosition != null) {
+        if (mPinBmp != null && mPinPosition != null && mEnabledPin) {
             canvas.drawBitmap(mPinBmp, mPinPosition.x + mPinOffset.x, mPinPosition.y + mPinOffset.y, new Paint());
         }
         //draw addSample list
         if (mSampleList != null) {
-            for (Point position : mSampleList.getPositionList()) {
+            for (Point position : mSampleList.getPositions()) {
                 Point point = CoordinateUtil.imageToScreen(position.x, position.y, getImageViewMatrix());
                 canvas.drawCircle(point.x, point.y, SCAN_POINT_EXPECTED_RANGE * getScale(), mExpectedRangePaint);
                 canvas.drawCircle(point.x, point.y, SCAN_POINT_CENTER_RADIUS * getScale(), mPointCenterPaint);
@@ -157,6 +158,11 @@ public class IntensityMapView extends ImageViewTouch {
         return imageToScreenCoord(imagePoint.x, imagePoint.y);
     }
 
+    public void setEnabledPin(boolean enabled){
+        if(mEnabledPin != enabled){
+            mEnabledPin = enabled;
+        }
+    }
     public interface OnDrawListener {
         void onDraw(Canvas canvas);
     }
