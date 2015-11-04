@@ -29,8 +29,12 @@ public abstract class BeaconBase {
     }
 
     public void update(int rssi) {
+        update(rssi, new Date());
+    }
+
+    public void update(int rssi, Date updateTime){
         mRssi = rssi;
-        mUpdatedTime = new Date();
+        mUpdatedTime = updateTime;
     }
 
 }

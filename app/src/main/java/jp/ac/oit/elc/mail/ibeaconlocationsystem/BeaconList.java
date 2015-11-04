@@ -18,19 +18,26 @@ public class BeaconList<T extends BeaconBase> extends ArrayList<T> {
         // if no existing in List
         return null;
     }
+    public T put(T beacon){
+        T item = getByMacAddress(beacon.getMacAddress());
+        if(item == null){
+            add(beacon);
+        }else{
+            item.update(beacon.getRssi(), beacon.getUpdatedTime());
+        }
+       return item;
+    }
 
-
-    public Date getUpdatedTime() {
-        Date result = new Date(0);
-        for (int i = 0; i < this.size() - 1; i++) {
-            T beacon = this.get(i);
-            Date time = beacon.getUpdatedTime();
-            if (time.after(result)) {
-                result = time;
+    public BeaconList<T> getLatestBeacons(Date limit){
+        if(limit == null){
+            return this;
+        }
+        BeaconList<T> result = new BeaconList<>();
+        for (T item : this){
+            if(item.getUpdatedTime().after(limit)){
+                result.add(item);
             }
         }
         return result;
     }
-
-
 }

@@ -8,6 +8,7 @@ import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.Context;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.List;
  * Created by yuuki on 10/6/15.
  */
 public class BluetoothBeaconScanner {
+    private static final String TAG = BluetoothBeaconScanner.class.getSimpleName();
     private List<ScanFilter> mFilters;
     private BluetoothLeScanner mScanner;
     private ScanSettings mSettings;
@@ -68,7 +70,7 @@ public class BluetoothBeaconScanner {
         @Override
         public void onScanFailed(int errorCode) {
             super.onScanFailed(errorCode);
-
+            Log.d(TAG, String.format("can't scan because error code %d", errorCode));
         }
     };
 

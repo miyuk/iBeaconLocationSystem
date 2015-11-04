@@ -80,7 +80,7 @@ public class LocationClassifier {
     }
 
     //make test data if position == null
-    public Instance makeInstance(Point position, BeaconList<BluetoothBeacon> btBeacons, BeaconList<WifiBeacon> wifiBeacons) {
+    private Instance makeInstance(Point position, BeaconList<BluetoothBeacon> btBeacons, BeaconList<WifiBeacon> wifiBeacons) {
         //if add test data, class attribute is missed
         double[] values = new double[mAttributes.size()];
         // initialize for missing beacons
@@ -121,9 +121,7 @@ public class LocationClassifier {
         }
     }
 
-    public Map<Point, Double> recognize(Sample sample) {
-        Log.d(TAG, String.format("Recognize: (%d,%d", sample.getPosition().x, sample.getPosition().y));
-        Instance instance = makeInstance(null, sample.getBtBeaconList(), sample.getWifiBeaconList());
+    public Map<Point, Double> recognize(Point positon, BeaconList<BluetoothBeacon> btBeacons, BeaconList<WifiBeacon> wifiBeacon){Instance instance = makeInstance(null, btBeacons, wifiBeacon);
         instance.setDataset(mInstances);
         double[] values;
         try {
@@ -142,6 +140,9 @@ public class LocationClassifier {
             result.put(entry.getValue(), values[index]);
         }
         return result;
+    }
+    public Map<Point, Double> recognize(Sample sample) {
+        return recognize(sample.getPosition(), sample.getBtBeaconList(), sample.getWifiBeaconList());
     }
 
     public Map<String, Point> getPositionMap() {
