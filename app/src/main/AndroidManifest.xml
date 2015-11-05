@@ -17,7 +17,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".activity.MeasurementActivity"></activity>
-        <activity android:name=".activity.LocationAcitivity" />
+        <activity android:name=".activity.LocationActivity" />
         <activity android:name=".activity.MenuActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

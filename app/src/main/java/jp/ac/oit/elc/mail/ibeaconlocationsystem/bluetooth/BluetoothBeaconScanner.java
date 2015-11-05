@@ -11,7 +11,10 @@ import android.content.Context;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.BeaconList;
 
 /**
  * Created by yuuki on 10/6/15.
@@ -22,8 +25,9 @@ public class BluetoothBeaconScanner {
     private BluetoothLeScanner mScanner;
     private ScanSettings mSettings;
     private boolean mStarted;
-    private OnScanListener mOnScanListener;
-
+    private Date mUpdatedTime;
+    private OnScanListener mScanListener;
+    private BeaconList<BluetoothBeacon> mBuffer;
     public BluetoothBeaconScanner(Context context) {
         BluetoothManager btManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
         mScanner = btManager.getAdapter().getBluetoothLeScanner();
@@ -36,9 +40,10 @@ public class BluetoothBeaconScanner {
         if (mStarted) {
             return;
         }
-        if(mOnScanListener != null){
-            mOnScanListener.onStartScan();
+        if(mScanListener != null){
+            mScanListener.onStartScan();
         }
+        mBuffer = new BeaconList<>();
         mScanner.startScan(mFilters, mSettings, mScanCallback);
         mStarted = true;
 
@@ -49,11 +54,12 @@ public class BluetoothBeaconScanner {
             return;
         }
         mScanner.stopScan(mScanCallback);
+        mUpdatedTime = null;
         mStarted = false;
     }
 
     public void setOnScanListener(OnScanListener listener) {
-        mOnScanListener = listener;
+        mScanListener = listener;
     }
 
     private ScanCallback mScanCallback = new ScanCallback() {
@@ -62,8 +68,9 @@ public class BluetoothBeaconScanner {
             super.onScanResult(callbackType, result);
             BluetoothDevice device = result.getDevice();
             BluetoothBeacon beacon = new BluetoothBeacon(device.getAddress(), result.getRssi());
-            if (mOnScanListener != null) {
-                mOnScanListener.onScan(beacon);
+            mUpdatedTime = new Date();
+            if (mScanListener != null) {
+                mScanListener.onScan(beacon);
             }
         }
 
@@ -74,6 +81,13 @@ public class BluetoothBeaconScanner {
         }
     };
 
+    public Date getUpdateTime() {
+        return mUpdatedTime;
+    }
+
+    public BeaconList<BluetoothBeacon> getBeaconBuffer(){
+        return mBuffer;
+    }
     public interface OnScanListener {
         void onStartScan();
         void onScan(BluetoothBeacon beacon);

@@ -35,7 +35,7 @@ public class MenuActivity extends AppCompatActivity {
         mButtonStartLocate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(v.getContext(), LocationAcitivity.class);
+                Intent intent = new Intent(v.getContext(), LocationActivity.class);
                 startActivity(intent);
             }
         });
