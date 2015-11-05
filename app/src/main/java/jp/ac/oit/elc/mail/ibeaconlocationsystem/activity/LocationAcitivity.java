@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.Map;
 
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.BeaconList;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.LocationSender;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.R;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.SampleList;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothBeacon;
@@ -22,10 +23,12 @@ import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeaconScanner;
 
 import static jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment.BT_TRAINING_CSV;
+import static jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment.SERVER_URL;
 import static jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment.WIFI_TRAINING_CSV;
 
 public class LocationAcitivity extends AppCompatActivity {
     private static final String TAG = LocationAcitivity.class.getSimpleName();
+
     private IntensityMapView mIntensityMapView;
     private TextView mTextStatus;
     private BluetoothBeaconScanner mBtScanner;
@@ -35,12 +38,13 @@ public class LocationAcitivity extends AppCompatActivity {
     private BeaconList<WifiBeacon> mWifiBeacons;
     private Date mBtUpdatedTime;
     private Date mWifiUpdatedTime;
-
+    private LocationSender mSender;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_location);
         initViews();
+        mSender = new LocationSender(SERVER_URL);
         mBtBeacons = new BeaconList<>();
         mWifiBeacons = new BeaconList<>();
         mBtScanner = new BluetoothBeaconScanner(this);
@@ -67,6 +71,7 @@ public class LocationAcitivity extends AppCompatActivity {
             protected void onProgressUpdate(Point... values) {
                 super.onProgressUpdate(values);
                 mIntensityMapView.setPinImageCoordPosition(values[0].x, values[0].y);
+                mSender.send(values[0]);
             }
 
             @Override
@@ -80,7 +85,7 @@ public class LocationAcitivity extends AppCompatActivity {
             protected Void doInBackground(Void... params) {
                 while (true) {
                     try {
-                        Thread.sleep(500);
+                        Thread.sleep(1000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                         break;
@@ -97,6 +102,7 @@ public class LocationAcitivity extends AppCompatActivity {
         };
         asyncTask.execute();
     }
+
 
     private Point calcPositions(Map<Point, Double> prob) {
         double x = 0, y = 0;

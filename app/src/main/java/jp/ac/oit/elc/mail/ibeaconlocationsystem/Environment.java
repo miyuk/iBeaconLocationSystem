@@ -13,4 +13,5 @@ public class Environment {
     public static final String BT_EVALUATION_CSV = APP_DIR + "/evaluation_bt.csv";
     public static final String WIFI_EVALUATION_CSV = APP_DIR + "/evaluation_wifi.csv";
     public static final String WEKA_HOME = APP_DIR + "/wekafiles";
+    public static final String SERVER_URL = "http://172.18.64.247/location_viewer/add_location.php";
 }
