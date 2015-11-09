@@ -16,9 +16,6 @@ import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothBeacon;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;
 import weka.classifiers.Classifier;
 import weka.classifiers.bayes.BayesNet;
-import weka.classifiers.bayes.NaiveBayes;
-import weka.classifiers.bayes.net.BayesNetGenerator;
-import weka.classifiers.functions.MultilayerPerceptron;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instance;
@@ -32,7 +29,7 @@ import static jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment.WEKA_HOME;
  */
 public class LocationClassifier {
     private static final int INSTANCES_CAPACITY = 1000;
-    private static final double OUT_OF_RANGE_RSSI = -70;
+    private static final double OUT_OF_RANGE_RSSI = -80;
     private static final double LOWER_RSSI = -100;
     private static final double UPPER_RSSI = -0;
 
@@ -55,7 +52,7 @@ public class LocationClassifier {
         for (Sample sample : samples) {
             for (BluetoothBeacon beacon : sample.getBtBeaconList()) {
                 Attribute attr = new Attribute(beacon.getMacAddress());
-                if(LocationDB.get(beacon.getMacAddress()) == null){
+                if (LocationDB.get(beacon.getMacAddress()) == null) {
                     continue;
                 }
                 if (!mAttributes.contains(attr)) {
@@ -166,10 +163,10 @@ public class LocationClassifier {
         return new Point((int) Math.round(x), (int) Math.round(y));
     }
 
-    public Point decidePosition(Map<Point, Double> probabilities){
+    public Point decidePosition(Map<Point, Double> probabilities) {
         Map.Entry<Point, Double> result = new AbstractMap.SimpleEntry<Point, Double>(null, 0.0);
-        for (Map.Entry<Point, Double> entry : probabilities.entrySet()){
-            if(result.getValue() < entry.getValue()){
+        for (Map.Entry<Point, Double> entry : probabilities.entrySet()) {
+            if (result.getValue() < entry.getValue()) {
                 result = entry;
             }
         }

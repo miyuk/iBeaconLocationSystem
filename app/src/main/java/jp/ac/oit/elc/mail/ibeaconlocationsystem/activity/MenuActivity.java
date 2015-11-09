@@ -14,6 +14,7 @@ public class MenuActivity extends AppCompatActivity {
     private Button mButtonStartMeasure;
     private Button mButtonStartLocate;
     private Button mButtonStartEvaluate;
+    private Button mButtonStartCalibrate;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -25,6 +26,7 @@ public class MenuActivity extends AppCompatActivity {
         mButtonStartMeasure = (Button) findViewById(R.id.buttonStartMeasure);
         mButtonStartLocate = (Button) findViewById(R.id.buttonStartLocate);
         mButtonStartEvaluate = (Button) findViewById(R.id.buttonStartEvaluate);
+        mButtonStartCalibrate = (Button) findViewById(R.id.buttonStartCalibrate);
         mButtonStartMeasure.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -43,6 +45,13 @@ public class MenuActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(v.getContext(), EvaluationActivity.class);
+                startActivity(intent);
+            }
+        });
+        mButtonStartCalibrate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(v.getContext(), CalibrationActivity.class);
                 startActivity(intent);
             }
         });

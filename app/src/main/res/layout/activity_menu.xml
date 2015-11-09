@@ -30,5 +30,11 @@
             android:text="Evaluate"
             android:id="@+id/buttonStartEvaluate" />
 
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Calibrate"
+            android:id="@+id/buttonStartCalibrate" />
+
     </LinearLayout>
 </RelativeLayout>

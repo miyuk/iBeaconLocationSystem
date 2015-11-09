@@ -26,7 +26,7 @@ import static jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment.BT_TRAINING_C
 import static jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment.SERVER_URL;
 import static jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment.WIFI_TRAINING_CSV;
 
-public class LocationActivity extends AppCompatActivity{
+public class LocationActivity extends AppCompatActivity {
     private static final String TAG = LocationActivity.class.getSimpleName();
 
     private IntensityMapView mIntensityMapView;
@@ -108,15 +108,16 @@ public class LocationActivity extends AppCompatActivity{
 
     LoaderManager.LoaderCallbacks<LocationClassifier> mClassifierLoaderCallback = new LoaderManager.LoaderCallbacks<LocationClassifier>() {
         ProgressDialog dialog;
+
         @Override
         public Loader<LocationClassifier> onCreateLoader(int id, Bundle args) {
             dialog = new ProgressDialog(LocationActivity.this);
             dialog.setMessage("Load Classifier");
             dialog.setCancelable(false);
             dialog.show();
-            String btTraingCsv = args.getString("BT_TRAINING_CSV");
+            String btTrainingCsv = args.getString("BT_TRAINING_CSV");
             String wifiTrainingCsv = args.getString("WIFI_TRAINING_CSV");
-            ClassifierLoader loader = new ClassifierLoader(LocationActivity.this, btTraingCsv, wifiTrainingCsv);
+            ClassifierLoader loader = new ClassifierLoader(LocationActivity.this, btTrainingCsv, wifiTrainingCsv);
             return loader;
         }
 
