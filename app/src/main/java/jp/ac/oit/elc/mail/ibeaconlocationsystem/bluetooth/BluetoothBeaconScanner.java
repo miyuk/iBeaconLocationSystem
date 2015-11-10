@@ -69,6 +69,7 @@ public class BluetoothBeaconScanner {
             BluetoothDevice device = result.getDevice();
             BluetoothBeacon beacon = new BluetoothBeacon(device.getAddress(), result.getRssi());
             mUpdatedTime = new Date();
+            mBuffer.put(beacon);
             if (mScanListener != null) {
                 mScanListener.onScan(beacon);
             }

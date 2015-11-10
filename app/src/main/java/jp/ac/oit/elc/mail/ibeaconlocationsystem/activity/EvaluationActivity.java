@@ -73,9 +73,12 @@ public class EvaluationActivity extends AppCompatActivity {
 
     private void evaluation() {
         for (Sample sample : mEvalData) {
-            Map<Point, Double> pValues = mClassifier.recognize(sample);
+            Map<Point, Double> pValues = mClassifier.recognize(sample.getWifiBeaconList(), false);
             Point calcPos = mClassifier.predictPosition(pValues);
-            mCalcPositionMap.put(sample.getPosition(), calcPos);
+            Map<Point, Double> pValuesBt = mClassifier.recognize(sample.getBtBeaconList(), true);
+            Point calcPosBt = mClassifier.predictPosition(pValues);
+            Point res = new Point((calcPos.x + calcPosBt.x) / 2, (calcPos.y + calcPosBt.y) / 2);
+            mCalcPositionMap.put(sample.getPosition(), res);
             mIntensityMap.invalidate();
         }
     }

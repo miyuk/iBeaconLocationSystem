@@ -3,6 +3,9 @@ package jp.ac.oit.elc.mail.ibeaconlocationsystem.activity;
 import android.app.LoaderManager;
 import android.app.ProgressDialog;
 import android.content.Loader;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Point;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -14,12 +17,14 @@ import android.widget.Toast;
 import java.util.Date;
 import java.util.Map;
 
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.BeaconList;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.LocationSender;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.R;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothBeaconScanner;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.classification.ClassifierLoader;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.classification.LocationClassifier;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.view.IntensityMapView;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeaconScanner;
 
 import static jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment.BT_TRAINING_CSV;
@@ -29,12 +34,16 @@ import static jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment.WIFI_TRAINING
 public class LocationActivity extends AppCompatActivity {
     private static final String TAG = LocationActivity.class.getSimpleName();
 
-    private IntensityMapView mIntensityMapView;
+    //view
+    private IntensityMapView mIntensityMap;
     private TextView mTextStatus;
+    //model
     private BluetoothBeaconScanner mBtScanner;
     private WifiBeaconScanner mWifiScanner;
     private LocationClassifier mClassifier;
     private LocationSender mSender;
+    private Point mWifiLocatedPosition;
+    private Point mBtLocatedPosition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +53,7 @@ public class LocationActivity extends AppCompatActivity {
         mSender = new LocationSender(SERVER_URL);
         mBtScanner = new BluetoothBeaconScanner(this);
         mWifiScanner = new WifiBeaconScanner(this);
+        mWifiScanner.setOnScanListener(mWifiScanListener);
         Bundle bundle = new Bundle();
         bundle.putString("BT_TRAINING_CSV", BT_TRAINING_CSV);
         bundle.putString("WIFI_TRAINING_CSV", WIFI_TRAINING_CSV);
@@ -51,10 +61,11 @@ public class LocationActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        mIntensityMapView = (IntensityMapView) findViewById(R.id.intensityMapView);
+        mIntensityMap = (IntensityMapView) findViewById(R.id.intensityMapView);
         mTextStatus = (TextView) findViewById(R.id.textStatus);
-        mIntensityMapView.setImageResource(R.mipmap.floor_map);
-        mIntensityMapView.setEnabledPin(true);
+        mIntensityMap.setImageResource(R.mipmap.floor_map);
+        mIntensityMap.setOnDrawListener(mDrawMapListener);
+//        mIntensityMap.setEnabledPin(true);
     }
 
     private void startScan() {
@@ -62,8 +73,9 @@ public class LocationActivity extends AppCompatActivity {
             @Override
             protected void onProgressUpdate(Point... values) {
                 super.onProgressUpdate(values);
-                mIntensityMapView.setPinImageCoordPosition(values[0].x, values[0].y);
-                mSender.send(values[0]);
+                mBtLocatedPosition = values[0];
+                mIntensityMap.invalidate();
+//                mSender.send(values[0]);
             }
 
             @Override
@@ -75,6 +87,7 @@ public class LocationActivity extends AppCompatActivity {
 
             @Override
             protected Void doInBackground(Void... params) {
+                Date lastUpdateTime = new Date();
                 while (!isCancelled()) {
                     try {
                         Thread.sleep(1000);
@@ -82,28 +95,15 @@ public class LocationActivity extends AppCompatActivity {
                         e.printStackTrace();
                         cancel(true);
                     }
-                    Date btlimit = new Date(new Date().getTime() - 1000);
-
-                    Map<Point, Double> recognized = mClassifier.recognize(null,
-                            mBtScanner.getBeaconBuffer().getLatestBeacons(btlimit),
-                            mWifiScanner.getBeaconBuffer().getLatestBeacons(mWifiScanner.getUpdateTime()));
-                    Point pos = calcPositions(recognized);
+                    Map<Point, Double> pValues = mClassifier.recognize(mBtScanner.getBeaconBuffer().getLatestBeacons(lastUpdateTime), true);
+                    Point pos = mClassifier.predictPosition(pValues);
                     Log.d(TAG, "recognized result" + pos.toString());
+                    lastUpdateTime = new Date();
                     publishProgress(pos);
                 }
                 return null;
             }
         }.execute();
-    }
-
-
-    private Point calcPositions(Map<Point, Double> prob) {
-        double x = 0, y = 0;
-        for (Map.Entry<Point, Double> entry : prob.entrySet()) {
-            x += entry.getValue() * entry.getKey().x;
-            y += entry.getValue() * entry.getKey().y;
-        }
-        return new Point((int) Math.round(x), (int) Math.round(y));
     }
 
     LoaderManager.LoaderCallbacks<LocationClassifier> mClassifierLoaderCallback = new LoaderManager.LoaderCallbacks<LocationClassifier>() {
@@ -132,6 +132,50 @@ public class LocationActivity extends AppCompatActivity {
         @Override
         public void onLoaderReset(Loader<LocationClassifier> loader) {
 
+        }
+    };
+
+    private WifiBeaconScanner.OnScanListener mWifiScanListener = new WifiBeaconScanner.OnScanListener() {
+        @Override
+        public void onStartScan() {
+
+        }
+
+        @Override
+        public void onScan(BeaconList<WifiBeacon> beaconList) {
+            Map<Point, Double> pValues = mClassifier.recognize(beaconList, false);
+            mWifiLocatedPosition = mClassifier.predictPosition(pValues);
+            Log.d(TAG, "Wifi estimation " + mWifiLocatedPosition.toString());
+            mIntensityMap.invalidate();
+        }
+    };
+
+    private IntensityMapView.OnDrawListener mDrawMapListener = new IntensityMapView.OnDrawListener() {
+        @Override
+        public void onDraw(Canvas canvas) {
+            if (mWifiLocatedPosition != null) {
+                Point pos = mIntensityMap.imageToScreenCoord(mWifiLocatedPosition.x, mWifiLocatedPosition.y);
+                Paint paint = new Paint();
+                paint.setStyle(Paint.Style.FILL);
+                paint.setColor(Color.GRAY);
+                canvas.drawCircle(pos.x, pos.y, 10, paint);
+            }
+            if (mBtLocatedPosition != null) {
+                Point pos = mIntensityMap.imageToScreenCoord(mBtLocatedPosition.x, mBtLocatedPosition.y);
+                Paint paint = new Paint();
+                paint.setStyle(Paint.Style.FILL);
+                paint.setColor(Color.GREEN);
+                canvas.drawCircle(pos.x, pos.y, 10, paint);
+            }
+            if (mBtLocatedPosition != null && mWifiLocatedPosition != null) {
+                Point pos = mIntensityMap.imageToScreenCoord(
+                        (mBtLocatedPosition.x + mWifiLocatedPosition.x) / 2,
+                        (mBtLocatedPosition.y + mWifiLocatedPosition.y) / 2);
+                Paint paint = new Paint();
+                paint.setStyle(Paint.Style.FILL);
+                paint.setColor(Color.CYAN);
+                canvas.drawCircle(pos.x, pos.y, 20, paint);
+            }
         }
     };
 
