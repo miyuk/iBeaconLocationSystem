@@ -1,7 +1,6 @@
 package jp.ac.oit.elc.mail.ibeaconlocationsystem;
 
 import android.graphics.Point;
-import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -11,7 +10,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothBeacon;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;
@@ -87,9 +85,9 @@ public class SampleList extends ArrayList<Sample> {
         }
         return result;
     }
-    public static List<String> getMacAddresses(BeaconList<BeaconBase> list){
+    public static List<String> getMacAddresses(BeaconList<Beacon> list){
         List<String> result = new ArrayList<>();
-        for (BeaconBase  beacon : list){
+        for (Beacon beacon : list){
             String mac = beacon.getMacAddress();
             if(!result.contains(mac)){
                 result.add(mac);

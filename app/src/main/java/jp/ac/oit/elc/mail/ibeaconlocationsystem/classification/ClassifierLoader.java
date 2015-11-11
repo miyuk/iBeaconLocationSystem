@@ -2,30 +2,35 @@ package jp.ac.oit.elc.mail.ibeaconlocationsystem.classification;
 
 import android.content.AsyncTaskLoader;
 import android.content.Context;
-import android.util.Log;
 
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.SampleList;
 
 /**
  * Created by yuuki on 11/4/15.
  */
-public class ClassifierLoader extends AsyncTaskLoader<LocationClassifier> {
-    private String mBtTrainingPath;
-    private String mWifiTrainingPath;
-    public ClassifierLoader(Context context, String btTrainingPath, String wifiTrainingPath){
+public class ClassifierLoader extends AsyncTaskLoader<LocationClassifier[]> {
+    private String mBtDatasetPath;
+    private String mWifiDataSetPath;
+    public ClassifierLoader(Context context, String btDatasetPath, String wifiDatasetPath){
         super(context);
-        mBtTrainingPath = btTrainingPath;
-        mWifiTrainingPath = wifiTrainingPath;
+        mBtDatasetPath = btDatasetPath;
+        mWifiDataSetPath = wifiDatasetPath;
         forceLoad();
     }
 
-
     @Override
-    public LocationClassifier loadInBackground() {
-        Log.d("test", "start background");
-        SampleList samples = SampleList.loadFromCsv(mBtTrainingPath, mWifiTrainingPath);
-        LocationClassifier classifier = new LocationClassifier("IntensityMap", samples);
-        classifier.build();
-        return classifier;
+    public LocationClassifier[] loadInBackground() {
+        SampleList samples = SampleList.loadFromCsv(mBtDatasetPath, mWifiDataSetPath);
+        LocationClassifier[] result = new LocationClassifier[2];
+        result[0] = new BluetoothLocationClassifier();
+        result[1] = new WifiLocationClassifier();
+        try {
+            result[0].buildClassifier(samples);
+            result[1].buildClassifier(samples);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        return result;
     }
 }

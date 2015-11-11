@@ -22,8 +22,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.R;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.Sample;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.SampleList;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.classification.BluetoothLocationClassifier;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.classification.ClassifierLoader;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.classification.LocationClassifier;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.classification.WifiLocationClassifier;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.view.IntensityMapView;
 
 import static jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment.BT_EVALUATION_CSV;
@@ -40,9 +42,10 @@ public class EvaluationActivity extends AppCompatActivity {
     private TextView mTextError;
     //model
     private SampleList mEvalData;
-    private LocationClassifier mClassifier;
-    private Map<Point, Point> mCalcPositionMap;
-    private Point mSelectedPositon;
+    private BluetoothLocationClassifier mBtClassifier;
+    private WifiLocationClassifier mWifiClassifier;
+    private Map<Point, Point> mEstimatedPositionMap;
+    private Point mSelectedPosition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +57,7 @@ public class EvaluationActivity extends AppCompatActivity {
         bundle.putString("WIFI_TRAINING_CSV", WIFI_TRAINING_CSV);
         getLoaderManager().initLoader(0, bundle, mClassifierLoadCallback);
         mEvalData = SampleList.loadFromCsv(BT_EVALUATION_CSV, WIFI_EVALUATION_CSV);
-        mCalcPositionMap = new ConcurrentHashMap<>();
+        mEstimatedPositionMap = new ConcurrentHashMap<>();
         for (Point pos : mEvalData.getPositions()) {
             mSpinnerAdapter.add(String.format("%d,%d", pos.x, pos.y));
         }
@@ -71,14 +74,19 @@ public class EvaluationActivity extends AppCompatActivity {
         mPositionSpinner.setOnItemSelectedListener(mLocationSpinnerItemSelected);
     }
 
-    private void evaluation() {
+    private void evaluate() {
         for (Sample sample : mEvalData) {
-            Map<Point, Double> pValues = mClassifier.recognize(sample.getWifiBeaconList(), false);
-            Point calcPos = mClassifier.predictPosition(pValues);
-            Map<Point, Double> pValuesBt = mClassifier.recognize(sample.getBtBeaconList(), true);
-            Point calcPosBt = mClassifier.predictPosition(pValues);
-            Point res = new Point((calcPos.x + calcPosBt.x) / 2, (calcPos.y + calcPosBt.y) / 2);
-            mCalcPositionMap.put(sample.getPosition(), res);
+            Point pos;
+            try {
+                Point btPoint = mBtClassifier.estimatePosition(sample.getBtBeaconList(), null);
+                Point wifiPoint = mWifiClassifier.estimatePosition(sample.getWifiBeaconList(), null);
+                pos = new Point((btPoint.x + wifiPoint.x) / 2, (btPoint.y + wifiPoint.y) / 2);
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(this, "can't evaluate", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            mEstimatedPositionMap.put(sample.getPosition(), pos);
             mIntensityMap.invalidate();
         }
     }
@@ -86,9 +94,9 @@ public class EvaluationActivity extends AppCompatActivity {
     private IntensityMapView.OnDrawListener mMapDrawListener = new IntensityMapView.OnDrawListener() {
         @Override
         public void onDraw(Canvas canvas) {
-            for (Map.Entry<Point, Point> entry : mCalcPositionMap.entrySet()) {
-                Point p = mCalcPositionMap.get(entry.getKey());
-                boolean isSelected = entry.getKey().equals(mSelectedPositon);
+            for (Map.Entry<Point, Point> entry : mEstimatedPositionMap.entrySet()) {
+                Point p = mEstimatedPositionMap.get(entry.getKey());
+                boolean isSelected = entry.getKey().equals(mSelectedPosition);
                 Point measurePos = mIntensityMap.imageToScreenCoord(entry.getKey());
                 Point calcPos = mIntensityMap.imageToScreenCoord(entry.getValue());
                 Paint paint = new Paint();
@@ -111,12 +119,12 @@ public class EvaluationActivity extends AppCompatActivity {
     private AdapterView.OnItemSelectedListener mLocationSpinnerItemSelected = new AdapterView.OnItemSelectedListener() {
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-            mSelectedPositon = parsePoint(mSpinnerAdapter.getItem(position));
-            if (!mCalcPositionMap.containsKey(mSelectedPositon)) {
+            mSelectedPosition = parsePoint(mSpinnerAdapter.getItem(position));
+            if (!mEstimatedPositionMap.containsKey(mSelectedPosition)) {
                 return;
             }
-            Point calculated = mCalcPositionMap.get(mSelectedPositon);
-            double dist = distance(mSelectedPositon.x, mSelectedPositon.y, calculated.x, calculated.y);
+            Point calculated = mEstimatedPositionMap.get(mSelectedPosition);
+            double dist = distance(mSelectedPosition.x, mSelectedPosition.y, calculated.x, calculated.y);
             mTextError.setText(String.format("%.2fm(%.0fpx)", dist*0.048, dist));
             mIntensityMap.invalidate();
         }
@@ -126,11 +134,11 @@ public class EvaluationActivity extends AppCompatActivity {
         }
     };
 
-    private LoaderManager.LoaderCallbacks<LocationClassifier> mClassifierLoadCallback = new LoaderManager.LoaderCallbacks<LocationClassifier>() {
+    private LoaderManager.LoaderCallbacks<LocationClassifier[]> mClassifierLoadCallback = new LoaderManager.LoaderCallbacks<LocationClassifier[]>() {
         ProgressDialog dialog;
 
         @Override
-        public Loader<LocationClassifier> onCreateLoader(int id, Bundle args) {
+        public Loader<LocationClassifier[]> onCreateLoader(int id, Bundle args) {
             dialog = new ProgressDialog(EvaluationActivity.this);
             dialog.setMessage("Load Classifier");
             dialog.setCancelable(false);
@@ -142,15 +150,20 @@ public class EvaluationActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onLoadFinished(Loader<LocationClassifier> loader, LocationClassifier data) {
+        public void onLoadFinished(Loader<LocationClassifier[]> loader, LocationClassifier[] data) {
+            if(data == null){
+                Toast.makeText(EvaluationActivity.this, "can't load Classifier", Toast.LENGTH_SHORT).show();
+                return;
+            }
             Toast.makeText(EvaluationActivity.this, "Loaded Classifier", Toast.LENGTH_SHORT).show();
             dialog.dismiss();
-            mClassifier = data;
-            evaluation();
+            mBtClassifier = (BluetoothLocationClassifier)data[0];
+            mWifiClassifier = (WifiLocationClassifier)data[1];
+            evaluate();
         }
 
         @Override
-        public void onLoaderReset(Loader<LocationClassifier> loader) {
+        public void onLoaderReset(Loader<LocationClassifier[]> loader) {
         }
     };
 

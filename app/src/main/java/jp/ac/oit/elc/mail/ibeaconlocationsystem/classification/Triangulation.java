@@ -33,7 +33,7 @@ public class Triangulation {
 //        Point[] points = new Point[3];
 //        int i = 0;
 //        for (Map.Entry<BluetoothBeacon, Point> entry : map.entrySet()){
-//            rssis[i] = (double)mClassifier.convertRssiValue(entry.getKey().getRssi());
+//            rssis[i] = (double)mClassifier.mapRssiValue(entry.getKey().getRssi());
 //            points[i] = entry.getValue();
 //            i++;
 //        }

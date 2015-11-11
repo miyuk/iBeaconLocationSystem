@@ -26,6 +26,7 @@ import jp.ac.oit.elc.mail.ibeaconlocationsystem.classification.LocationClassifie
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.view.IntensityMapView;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeaconScanner;
+import weka.core.Instance;
 
 import static jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment.BT_TRAINING_CSV;
 import static jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment.SERVER_URL;
@@ -87,6 +88,7 @@ public class LocationActivity extends AppCompatActivity {
 
             @Override
             protected Void doInBackground(Void... params) {
+                while(mWifiLocatedPosition == null);
                 Date lastUpdateTime = new Date();
                 while (!isCancelled()) {
                     try {
@@ -95,11 +97,14 @@ public class LocationActivity extends AppCompatActivity {
                         e.printStackTrace();
                         cancel(true);
                     }
-                    Map<Point, Double> pValues = mClassifier.recognize(mBtScanner.getBeaconBuffer().getLatestBeacons(lastUpdateTime), true);
-                    Point pos = mClassifier.predictPosition(pValues);
-                    Log.d(TAG, "recognized result" + pos.toString());
-                    lastUpdateTime = new Date();
-                    publishProgress(pos);
+//                    Map<Point, Double> pValues = mClassifier.recognize(mBtScanner.getBeaconBuffer().getLatestBeacons(lastUpdateTime), true);
+//                    Point pos = mClassifier.predictPosition(pValues);
+//                    Instance i = mClassifier.testIns(pos, mWifiLocatedPosition, null);
+//                    Map<Point, Double> clc = mClassifier.distribute(mClassifier.mClassifier, i);
+//                    Point testPos = mClassifier.predictPosition(clc);
+//                    Log.d(TAG, "recognized result" + pos.toString());
+//                    lastUpdateTime = new Date();
+//                    publishProgress(testPos);
                 }
                 return null;
             }
@@ -118,7 +123,8 @@ public class LocationActivity extends AppCompatActivity {
             String btTrainingCsv = args.getString("BT_TRAINING_CSV");
             String wifiTrainingCsv = args.getString("WIFI_TRAINING_CSV");
             ClassifierLoader loader = new ClassifierLoader(LocationActivity.this, btTrainingCsv, wifiTrainingCsv);
-            return loader;
+//            return loader;
+            return null;
         }
 
         @Override
@@ -143,8 +149,8 @@ public class LocationActivity extends AppCompatActivity {
 
         @Override
         public void onScan(BeaconList<WifiBeacon> beaconList) {
-            Map<Point, Double> pValues = mClassifier.recognize(beaconList, false);
-            mWifiLocatedPosition = mClassifier.predictPosition(pValues);
+//            Map<Point, Double> pValues = mClassifier.recognize(beaconList, false);
+//            mWifiLocatedPosition = mClassifier.predictPosition(pValues);
             Log.d(TAG, "Wifi estimation " + mWifiLocatedPosition.toString());
             mIntensityMap.invalidate();
         }
