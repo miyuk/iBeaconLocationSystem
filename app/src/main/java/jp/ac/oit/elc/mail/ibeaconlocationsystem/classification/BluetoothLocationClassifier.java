@@ -29,11 +29,12 @@ public class BluetoothLocationClassifier extends LocationClassifier {
     private void initInstances(SampleList trainingData) {
         ArrayList<Attribute> attrs = extractAttributes(trainingData);
         m_Instances = new Instances("BT", attrs, INSTANCES_CAPACITY);
+        m_Instances.setClass(m_Instances.attribute("Class"));
+
         for (Sample sample : trainingData) {
             Instance instance = makeInstance(sample.getBtBeaconList(), sample.getPosition());
             m_Instances.add(instance);
         }
-        m_Instances.setClass(m_Instances.attribute("Class"));
     }
 
     private ArrayList<Attribute> extractAttributes(SampleList trainingData) {
@@ -48,7 +49,7 @@ public class BluetoothLocationClassifier extends LocationClassifier {
         }
         ArrayList<String> positions = new ArrayList<>();
         for (Point pos : trainingData.getPositions()) {
-            String cat = String.format("%d-%d", pos.x, pos.y);
+            String cat = formatPosition(pos);
             if (!positions.contains(cat)) {
                 positions.add(cat);
             }
@@ -69,7 +70,7 @@ public class BluetoothLocationClassifier extends LocationClassifier {
                 values[attr.index()] = mapRssiValue(beacon.getRssi());
             }
         }
-        Attribute clsAttr = m_Instances.attribute("Class");
+        Attribute clsAttr = m_Instances.classAttribute();
         if (position == null) {
             values[clsAttr.index()] = Utils.missingValue();
         } else {
@@ -80,8 +81,8 @@ public class BluetoothLocationClassifier extends LocationClassifier {
         return result;
     }
 
-    public Point estimatePosition(BeaconList<BluetoothBeacon> beacons, Point position) throws Exception {
-        Instance instance = makeInstance(beacons, position);
+    public Point estimatePosition(BeaconList<BluetoothBeacon> beacons) throws Exception {
+        Instance instance = makeInstance(beacons, null);
 //        Log.d(TAG, "estimate Instance: " + instance.toString());
         return estimatePosition(instance);
     }

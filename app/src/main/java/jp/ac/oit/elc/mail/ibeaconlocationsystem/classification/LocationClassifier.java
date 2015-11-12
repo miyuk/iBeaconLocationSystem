@@ -4,19 +4,22 @@ import android.graphics.Point;
 
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.SampleList;
 import weka.classifiers.bayes.NaiveBayes;
+import weka.classifiers.functions.MultilayerPerceptron;
 import weka.core.Instance;
+import weka.core.Instances;
 
 /**
  * Created by yuuki on 10/20/15.
  */
 public abstract class LocationClassifier extends NaiveBayes {
+    private static final String TAG = LocationClassifier.class.getSimpleName();
+
     protected static final int INSTANCES_CAPACITY = 1000;
     protected static final double OUT_OF_RANGE_RSSI = -80;
     protected static final double LOWER_RSSI = -100;
     protected static final double UPPER_RSSI = -0;
 
-    private static final String TAG = LocationClassifier.class.getSimpleName();
-
+    protected Instances m_Instances;
     public Point estimatePosition(Instance instance) throws Exception {
         double[] pValues = distributionForInstance(instance);
         double x = 0, y = 0;

@@ -7,8 +7,10 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -16,6 +18,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -25,6 +29,7 @@ import jp.ac.oit.elc.mail.ibeaconlocationsystem.SampleList;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.classification.BluetoothLocationClassifier;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.classification.ClassifierLoader;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.classification.LocationClassifier;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.classification.TestClassifier;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.classification.WifiLocationClassifier;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.view.IntensityMapView;
 
@@ -44,6 +49,7 @@ public class EvaluationActivity extends AppCompatActivity {
     private SampleList mEvalData;
     private BluetoothLocationClassifier mBtClassifier;
     private WifiLocationClassifier mWifiClassifier;
+    private TestClassifier mTestClassifier;
     private Map<Point, Point[]> mEstimatedPositionMap;
     private Point mSelectedPosition;
     private boolean mEvaluated;
@@ -79,21 +85,22 @@ public class EvaluationActivity extends AppCompatActivity {
         for (Sample sample : mEvalData) {
             Point btPos;
             Point wifiPos;
-            Point avgPos;
+//            Point avgPos;
+            Point testPos;
             try {
-                btPos = mBtClassifier.estimatePosition(sample.getBtBeaconList(), null);
-                wifiPos = mWifiClassifier.estimatePosition(sample.getWifiBeaconList(), null);
-                avgPos = new Point((btPos.x + wifiPos.x) / 2, (btPos.y + wifiPos.y) / 2);
+                btPos = mBtClassifier.estimatePosition(sample.getBtBeaconList());
+                wifiPos = mWifiClassifier.estimatePosition(sample.getWifiBeaconList());
+                testPos = mTestClassifier.estimatePosition(btPos, wifiPos);
+//                avgPos = new Point((btPos.x + wifiPos.x) / 2, (btPos.y + wifiPos.y) / 2);
             } catch (Exception e) {
                 e.printStackTrace();
                 Toast.makeText(this, "can't evaluate", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            mEstimatedPositionMap.put(sample.getPosition(), new Point[]{btPos, wifiPos, avgPos});
+            mEstimatedPositionMap.put(sample.getPosition(), new Point[]{btPos, wifiPos, testPos});
         }
         mEvaluated = true;
-        mIntensityMap.invalidate();
     }
 
     private IntensityMapView.OnDrawListener mMapDrawListener = new IntensityMapView.OnDrawListener() {
@@ -176,7 +183,33 @@ public class EvaluationActivity extends AppCompatActivity {
             Toast.makeText(EvaluationActivity.this, "Loaded Classifier", Toast.LENGTH_SHORT).show();
             mBtClassifier = (BluetoothLocationClassifier) data[0];
             mWifiClassifier = (WifiLocationClassifier) data[1];
-            evaluate();
+            new AsyncTask<Void, Void, Void>(){
+                @Override
+                protected Void doInBackground(Void... params) {
+                    mTestClassifier = new TestClassifier();
+                    SampleList samples = SampleList.loadFromCsv(BT_TRAINING_CSV, WIFI_TRAINING_CSV);
+                    List<Point[]> testTrainingDate = new ArrayList<>();
+                    try {
+                        for (Sample sample : samples) {
+                            Point btPos = mBtClassifier.estimatePosition(sample.getBtBeaconList());
+                            Point wifiPos = mWifiClassifier.estimatePosition(sample.getWifiBeaconList());
+                            testTrainingDate.add(new Point[]{btPos, wifiPos, sample.getPosition()});
+                        }
+                        Log.d(TAG, "Start Build Test Classifier");
+                        mTestClassifier.buildClassifier(testTrainingDate);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    evaluate();
+                    return null;
+                }
+
+                @Override
+                protected void onPostExecute(Void aVoid) {
+                    super.onPostExecute(aVoid);
+                    mIntensityMap.invalidate();
+                }
+            }.execute();
         }
 
         @Override
