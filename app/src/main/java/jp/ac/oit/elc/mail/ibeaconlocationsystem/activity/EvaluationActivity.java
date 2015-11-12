@@ -44,8 +44,9 @@ public class EvaluationActivity extends AppCompatActivity {
     private SampleList mEvalData;
     private BluetoothLocationClassifier mBtClassifier;
     private WifiLocationClassifier mWifiClassifier;
-    private Map<Point, Point> mEstimatedPositionMap;
+    private Map<Point, Point[]> mEstimatedPositionMap;
     private Point mSelectedPosition;
+    private boolean mEvaluated;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,43 +77,59 @@ public class EvaluationActivity extends AppCompatActivity {
 
     private void evaluate() {
         for (Sample sample : mEvalData) {
-            Point pos;
+            Point btPos;
+            Point wifiPos;
+            Point avgPos;
             try {
-                Point btPoint = mBtClassifier.estimatePosition(sample.getBtBeaconList(), null);
-                Point wifiPoint = mWifiClassifier.estimatePosition(sample.getWifiBeaconList(), null);
-                pos = new Point((btPoint.x + wifiPoint.x) / 2, (btPoint.y + wifiPoint.y) / 2);
+                btPos = mBtClassifier.estimatePosition(sample.getBtBeaconList(), null);
+                wifiPos = mWifiClassifier.estimatePosition(sample.getWifiBeaconList(), null);
+                avgPos = new Point((btPos.x + wifiPos.x) / 2, (btPos.y + wifiPos.y) / 2);
             } catch (Exception e) {
                 e.printStackTrace();
                 Toast.makeText(this, "can't evaluate", Toast.LENGTH_SHORT).show();
                 return;
             }
-            mEstimatedPositionMap.put(sample.getPosition(), pos);
-            mIntensityMap.invalidate();
+
+            mEstimatedPositionMap.put(sample.getPosition(), new Point[]{btPos, wifiPos, avgPos});
         }
+        mEvaluated = true;
+        mIntensityMap.invalidate();
     }
 
     private IntensityMapView.OnDrawListener mMapDrawListener = new IntensityMapView.OnDrawListener() {
         @Override
         public void onDraw(Canvas canvas) {
-            for (Map.Entry<Point, Point> entry : mEstimatedPositionMap.entrySet()) {
-                Point p = mEstimatedPositionMap.get(entry.getKey());
+            if (!mEvaluated) {
+                return;
+            }
+            for (Map.Entry<Point, Point[]> entry : mEstimatedPositionMap.entrySet()) {
                 boolean isSelected = entry.getKey().equals(mSelectedPosition);
-                Point measurePos = mIntensityMap.imageToScreenCoord(entry.getKey());
-                Point calcPos = mIntensityMap.imageToScreenCoord(entry.getValue());
+                Point truePos = mIntensityMap.imageToScreenCoord(entry.getKey());
+                Point btPos = mIntensityMap.imageToScreenCoord(entry.getValue()[0]);
+                Point wifiPos = mIntensityMap.imageToScreenCoord(entry.getValue()[1]);
+                Point avgPos = mIntensityMap.imageToScreenCoord(entry.getValue()[2]);
                 Paint paint = new Paint();
-                paint.setStyle(Paint.Style.FILL);
+                int width = 2;
+                int alpha = 64;
                 if (isSelected) {
-                    paint.setColor(Color.RED);
-                } else {
-                    paint.setColor(Color.BLUE);
+                    width = 5;
+                    alpha = 255;
                 }
-                if (p != null) {
-                    canvas.drawCircle(p.x, p.y, 10, new Paint());
-                }
-                canvas.drawCircle(measurePos.x, measurePos.y, 10, paint);
-                paint.setColor(Color.GREEN);
-                canvas.drawCircle(calcPos.x, calcPos.y, 10, paint);
-                canvas.drawLine(measurePos.x, measurePos.y, calcPos.x, calcPos.y, new Paint());
+                paint.setColor(Color.argb(alpha, 0, 0, 0));
+                paint.setStyle(Paint.Style.STROKE);
+                paint.setStrokeWidth(width);
+                canvas.drawLine(truePos.x, truePos.y, avgPos.x, avgPos.y, paint);
+                canvas.drawLine(avgPos.x, avgPos.y, btPos.x, btPos.y, paint);
+                canvas.drawLine(avgPos.x, avgPos.y, wifiPos.x, wifiPos.y, paint);
+                paint.setStyle(Paint.Style.FILL);
+                canvas.drawCircle(truePos.x, truePos.y, width * 2, paint);
+                paint.setColor(Color.argb(alpha, 255, 0, 0));
+                canvas.drawCircle(btPos.x, btPos.y, width * 2, paint);
+                paint.setColor(Color.argb(alpha, 0, 255, 0));
+                canvas.drawCircle(wifiPos.x, wifiPos.y, width * 2, paint);
+                paint.setColor(Color.argb(alpha, 0, 0, 255));
+                canvas.drawCircle(avgPos.x, avgPos.y, width * 2, paint);
+
             }
         }
     };
@@ -123,9 +140,9 @@ public class EvaluationActivity extends AppCompatActivity {
             if (!mEstimatedPositionMap.containsKey(mSelectedPosition)) {
                 return;
             }
-            Point calculated = mEstimatedPositionMap.get(mSelectedPosition);
+            Point calculated = mEstimatedPositionMap.get(mSelectedPosition)[2];
             double dist = distance(mSelectedPosition.x, mSelectedPosition.y, calculated.x, calculated.y);
-            mTextError.setText(String.format("%.2fm(%.0fpx)", dist*0.048, dist));
+            mTextError.setText(String.format("%.2fm(%.0fpx)", dist * 0.048, dist));
             mIntensityMap.invalidate();
         }
 
@@ -151,14 +168,14 @@ public class EvaluationActivity extends AppCompatActivity {
 
         @Override
         public void onLoadFinished(Loader<LocationClassifier[]> loader, LocationClassifier[] data) {
-            if(data == null){
+            dialog.dismiss();
+            if (data == null) {
                 Toast.makeText(EvaluationActivity.this, "can't load Classifier", Toast.LENGTH_SHORT).show();
                 return;
             }
             Toast.makeText(EvaluationActivity.this, "Loaded Classifier", Toast.LENGTH_SHORT).show();
-            dialog.dismiss();
-            mBtClassifier = (BluetoothLocationClassifier)data[0];
-            mWifiClassifier = (WifiLocationClassifier)data[1];
+            mBtClassifier = (BluetoothLocationClassifier) data[0];
+            mWifiClassifier = (WifiLocationClassifier) data[1];
             evaluate();
         }
 

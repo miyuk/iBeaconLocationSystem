@@ -1,14 +1,12 @@
 package jp.ac.oit.elc.mail.ibeaconlocationsystem.classification;
 
 import android.graphics.Point;
-import android.util.Log;
 
 import java.util.ArrayList;
 
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.BeaconList;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.Sample;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.SampleList;
-import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothBeacon;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
@@ -64,7 +62,7 @@ public class WifiLocationClassifier extends LocationClassifier {
     public Instance makeInstance(BeaconList<WifiBeacon> beacons, Point position) {
         double[] values = new double[m_Instances.numAttributes()];
         for (int i = 0; i < values.length; i++) {
-            values[i] = 0;
+            values[i] = 0.0;
         }
         for (WifiBeacon beacon : beacons) {
             Attribute attr = m_Instances.attribute("Wifi:" + beacon.getMacAddress());
@@ -82,8 +80,10 @@ public class WifiLocationClassifier extends LocationClassifier {
         result.setDataset(m_Instances);
         return result;
     }
-    public Point estimatePosition(BeaconList<WifiBeacon> beacons, Point position) throws Exception{
+
+    public Point estimatePosition(BeaconList<WifiBeacon> beacons, Point position) throws Exception {
         Instance instance = makeInstance(beacons, position);
+//        Log.d(TAG, "estimate Instance: " + instance.toString());
         return estimatePosition(instance);
     }
 }

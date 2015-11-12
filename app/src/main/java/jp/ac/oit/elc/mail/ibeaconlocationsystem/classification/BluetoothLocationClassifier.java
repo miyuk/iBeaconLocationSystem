@@ -1,7 +1,6 @@
 package jp.ac.oit.elc.mail.ibeaconlocationsystem.classification;
 
 import android.graphics.Point;
-import android.util.Log;
 
 import java.util.ArrayList;
 
@@ -62,7 +61,7 @@ public class BluetoothLocationClassifier extends LocationClassifier {
     public Instance makeInstance(BeaconList<BluetoothBeacon> beacons, Point position) {
         double[] values = new double[m_Instances.numAttributes()];
         for (int i = 0; i < values.length; i++) {
-            values[i] = 0;
+            values[i] = 0.0;
         }
         for (BluetoothBeacon beacon : beacons) {
             Attribute attr = m_Instances.attribute("BT:" + beacon.getMacAddress());
@@ -83,7 +82,7 @@ public class BluetoothLocationClassifier extends LocationClassifier {
 
     public Point estimatePosition(BeaconList<BluetoothBeacon> beacons, Point position) throws Exception {
         Instance instance = makeInstance(beacons, position);
-        System.out.println(instance);
+//        Log.d(TAG, "estimate Instance: " + instance.toString());
         return estimatePosition(instance);
     }
 }
