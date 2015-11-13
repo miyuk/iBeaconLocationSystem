@@ -18,11 +18,16 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.R;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.Sample;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.SampleList;
@@ -30,9 +35,11 @@ import jp.ac.oit.elc.mail.ibeaconlocationsystem.classification.BluetoothLocation
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.classification.ClassifierLoader;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.classification.LocationClassifier;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.classification.TestClassifier;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.classification.Triangulation;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.classification.WifiLocationClassifier;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.view.IntensityMapView;
 
+import static jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment.APP_DIR;
 import static jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment.BT_EVALUATION_CSV;
 import static jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment.BT_TRAINING_CSV;
 import static jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment.WIFI_EVALUATION_CSV;
@@ -82,16 +89,21 @@ public class EvaluationActivity extends AppCompatActivity {
     }
 
     private void evaluate() {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("TRUE_X,TRUE_Y,BT_X,BT_Y,WIFI_X,WIFI_Y,TEST_X,TEST_Y\n");
         for (Sample sample : mEvalData) {
             Point btPos;
             Point wifiPos;
+            Point triPos;
 //            Point avgPos;
             Point testPos;
             try {
                 btPos = mBtClassifier.estimatePosition(sample.getBtBeaconList());
                 wifiPos = mWifiClassifier.estimatePosition(sample.getWifiBeaconList());
+//                wifiPos = Triangulation.calc(sample.getBtBeaconList());
                 testPos = mTestClassifier.estimatePosition(btPos, wifiPos);
 //                avgPos = new Point((btPos.x + wifiPos.x) / 2, (btPos.y + wifiPos.y) / 2);
+                buffer.append(String.format("%d,%d,%d,%d,%d,%d,%d,%d\n", sample.getPosition().x, sample.getPosition().y,  btPos.x, btPos.y, wifiPos.x, wifiPos.y, testPos.x, testPos.y));
             } catch (Exception e) {
                 e.printStackTrace();
                 Toast.makeText(this, "can't evaluate", Toast.LENGTH_SHORT).show();
@@ -101,8 +113,23 @@ public class EvaluationActivity extends AppCompatActivity {
             mEstimatedPositionMap.put(sample.getPosition(), new Point[]{btPos, wifiPos, testPos});
         }
         mEvaluated = true;
+        try {
+            saveEvalResult(buffer.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
+    private void saveEvalResult(String text) throws IOException {
+        File file = new File(APP_DIR + "/eval_result.csv");
+        if (!file.exists()){
+            file.createNewFile();
+        }
+        BufferedWriter writer = new BufferedWriter(new FileWriter(file, false));
+        writer.write(text);
+        writer.flush();
+        writer.close();
+    }
     private IntensityMapView.OnDrawListener mMapDrawListener = new IntensityMapView.OnDrawListener() {
         @Override
         public void onDraw(Canvas canvas) {
@@ -193,6 +220,7 @@ public class EvaluationActivity extends AppCompatActivity {
                         for (Sample sample : samples) {
                             Point btPos = mBtClassifier.estimatePosition(sample.getBtBeaconList());
                             Point wifiPos = mWifiClassifier.estimatePosition(sample.getWifiBeaconList());
+//                            Point wifiPos = Triangulation.calc(sample.getBtBeaconList());
                             testTrainingDate.add(new Point[]{btPos, wifiPos, sample.getPosition()});
                         }
                         Log.d(TAG, "Start Build Test Classifier");

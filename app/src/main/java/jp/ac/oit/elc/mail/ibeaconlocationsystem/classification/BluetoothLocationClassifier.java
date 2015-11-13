@@ -47,6 +47,8 @@ public class BluetoothLocationClassifier extends LocationClassifier {
                 }
             }
         }
+        result.add(new Attribute("X"));
+        result.add(new Attribute("Y"));
         ArrayList<String> positions = new ArrayList<>();
         for (Point pos : trainingData.getPositions()) {
             String cat = formatPosition(pos);
@@ -70,6 +72,9 @@ public class BluetoothLocationClassifier extends LocationClassifier {
                 values[attr.index()] = mapRssiValue(beacon.getRssi());
             }
         }
+        Point pos = Triangulation.calc(beacons);
+        values[m_Instances.attribute("X").index()] = pos.x / 1245.0;
+        values[m_Instances.attribute("Y").index()] = pos.y / 1127.0;
         Attribute clsAttr = m_Instances.classAttribute();
         if (position == null) {
             values[clsAttr.index()] = Utils.missingValue();
