@@ -4,10 +4,8 @@ import android.app.LoaderManager;
 import android.app.ProgressDialog;
 import android.content.Loader;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -22,21 +20,17 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.R;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.Sample;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.SampleList;
-import jp.ac.oit.elc.mail.ibeaconlocationsystem.classification.BluetoothLocationClassifier;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.classification.BtAndWifiClassifier;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.classification.BtClassifier;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.classification.ClassifierLoader;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.classification.LocationClassifier;
-import jp.ac.oit.elc.mail.ibeaconlocationsystem.classification.TestClassifier;
-import jp.ac.oit.elc.mail.ibeaconlocationsystem.classification.Triangulation;
-import jp.ac.oit.elc.mail.ibeaconlocationsystem.classification.WifiLocationClassifier;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.classification.WifiClassifier;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.view.IntensityMapView;
 
 import static jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment.APP_DIR;
@@ -54,9 +48,9 @@ public class EvaluationActivity extends AppCompatActivity {
     private TextView mTextError;
     //model
     private SampleList mEvalData;
-    private BluetoothLocationClassifier mBtClassifier;
-    private WifiLocationClassifier mWifiClassifier;
-    private TestClassifier mTestClassifier;
+    private BtClassifier mBtClassifier;
+    private WifiClassifier mWifiClassifier;
+    private BtAndWifiClassifier mBothClassifier;
     private Map<Point, Point[]> mEstimatedPositionMap;
     private Point mSelectedPosition;
     private boolean mEvaluated;
@@ -90,29 +84,30 @@ public class EvaluationActivity extends AppCompatActivity {
 
     private void evaluate() {
         StringBuffer buffer = new StringBuffer();
-        buffer.append("TRUE_X,TRUE_Y,BT_X,BT_Y,WIFI_X,WIFI_Y,TEST_X,TEST_Y\n");
+        buffer.append("TRUE_X,TRUE_Y,BT_X,BT_Y,WIFI_X,WIFI_Y,BT+WIFI_X,BT+WIFI_Y\n");
         for (Sample sample : mEvalData) {
             Point btPos;
             Point wifiPos;
-            Point triPos;
-//            Point avgPos;
-            Point testPos;
+            Point bothPos;
             try {
-                btPos = mBtClassifier.estimatePosition(sample.getBtBeaconList());
-                wifiPos = mWifiClassifier.estimatePosition(sample.getWifiBeaconList());
-//                wifiPos = Triangulation.calc(sample.getBtBeaconList());
-                testPos = mTestClassifier.estimatePosition(btPos, wifiPos);
-//                avgPos = new Point((btPos.x + wifiPos.x) / 2, (btPos.y + wifiPos.y) / 2);
-                buffer.append(String.format("%d,%d,%d,%d,%d,%d,%d,%d\n", sample.getPosition().x, sample.getPosition().y,  btPos.x, btPos.y, wifiPos.x, wifiPos.y, testPos.x, testPos.y));
+                btPos = mBtClassifier.estimatePosition(sample.getBtBeaconList(), null);
+                wifiPos = mWifiClassifier.estimatePosition(null, sample.getWifiBeaconList());
+                bothPos = mBothClassifier.estimatePosition(sample.getBtBeaconList(), sample.getWifiBeaconList());
+                buffer.append(String.format("%d,%d,%d,%d,%d,%d,%d,%d\n",
+                        sample.getPosition().x, sample.getPosition().y,
+                        btPos.x, btPos.y,
+                        wifiPos.x, wifiPos.y,
+                        bothPos.x, bothPos.y));
             } catch (Exception e) {
                 e.printStackTrace();
                 Toast.makeText(this, "can't evaluate", Toast.LENGTH_SHORT).show();
                 return;
             }
-
-            mEstimatedPositionMap.put(sample.getPosition(), new Point[]{btPos, wifiPos, testPos});
+            Log.d(TAG, String.format("True:%s BT:%s Wifi:%s BT+Wifi", sample.getPosition(), btPos, wifiPos, bothPos));
+            mEstimatedPositionMap.put(sample.getPosition(), new Point[]{btPos, wifiPos, bothPos});
         }
         mEvaluated = true;
+        mIntensityMap.invalidate();
         try {
             saveEvalResult(buffer.toString());
         } catch (IOException e) {
@@ -122,7 +117,7 @@ public class EvaluationActivity extends AppCompatActivity {
 
     private void saveEvalResult(String text) throws IOException {
         File file = new File(APP_DIR + "/eval_result.csv");
-        if (!file.exists()){
+        if (!file.exists()) {
             file.createNewFile();
         }
         BufferedWriter writer = new BufferedWriter(new FileWriter(file, false));
@@ -130,6 +125,7 @@ public class EvaluationActivity extends AppCompatActivity {
         writer.flush();
         writer.close();
     }
+
     private IntensityMapView.OnDrawListener mMapDrawListener = new IntensityMapView.OnDrawListener() {
         @Override
         public void onDraw(Canvas canvas) {
@@ -141,29 +137,33 @@ public class EvaluationActivity extends AppCompatActivity {
                 Point truePos = mIntensityMap.imageToScreenCoord(entry.getKey());
                 Point btPos = mIntensityMap.imageToScreenCoord(entry.getValue()[0]);
                 Point wifiPos = mIntensityMap.imageToScreenCoord(entry.getValue()[1]);
-                Point avgPos = mIntensityMap.imageToScreenCoord(entry.getValue()[2]);
-                Paint paint = new Paint();
+                Point bothPos = mIntensityMap.imageToScreenCoord(entry.getValue()[2]);
+                Paint strokePaint = new Paint();
+                Paint fillPaint = new Paint();
+                strokePaint.setStyle(Paint.Style.STROKE);
+                fillPaint.setStyle(Paint.Style.FILL);
                 int width = 2;
                 int alpha = 64;
                 if (isSelected) {
                     width = 5;
                     alpha = 255;
                 }
-                paint.setColor(Color.argb(alpha, 0, 0, 0));
-                paint.setStyle(Paint.Style.STROKE);
-                paint.setStrokeWidth(width);
-                canvas.drawLine(truePos.x, truePos.y, avgPos.x, avgPos.y, paint);
-                canvas.drawLine(avgPos.x, avgPos.y, btPos.x, btPos.y, paint);
-                canvas.drawLine(avgPos.x, avgPos.y, wifiPos.x, wifiPos.y, paint);
-                paint.setStyle(Paint.Style.FILL);
-                canvas.drawCircle(truePos.x, truePos.y, width * 2, paint);
-                paint.setColor(Color.argb(alpha, 255, 0, 0));
-                canvas.drawCircle(btPos.x, btPos.y, width * 2, paint);
-                paint.setColor(Color.argb(alpha, 0, 255, 0));
-                canvas.drawCircle(wifiPos.x, wifiPos.y, width * 2, paint);
-                paint.setColor(Color.argb(alpha, 0, 0, 255));
-                canvas.drawCircle(avgPos.x, avgPos.y, width * 2, paint);
-
+                strokePaint.setStrokeWidth(width);
+                strokePaint.setARGB(alpha, 255, 0, 0);
+                fillPaint.setARGB(alpha, 255, 0, 0);
+                canvas.drawLine(btPos.x, btPos.y, truePos.x, truePos.y, strokePaint);
+                canvas.drawCircle(btPos.x, btPos.y, width * 2, fillPaint);
+                strokePaint.setARGB(alpha, 0, 255, 0);
+                fillPaint.setARGB(alpha, 0, 255, 0);
+                canvas.drawLine(wifiPos.x, wifiPos.y, truePos.x, truePos.y, strokePaint);
+                canvas.drawCircle(wifiPos.x, wifiPos.y, width * 2, fillPaint);
+                strokePaint.setARGB(alpha, 0, 0, 255);
+                fillPaint.setARGB(alpha, 0, 0, 255);
+                canvas.drawLine(truePos.x, truePos.y, bothPos.x, bothPos.y, strokePaint);
+                canvas.drawCircle(bothPos.x, bothPos.y, width * 2, fillPaint);
+                strokePaint.setARGB(alpha, 0, 0, 0);
+                fillPaint.setARGB(alpha, 0, 0, 0);
+                canvas.drawCircle(truePos.x, truePos.y, width * 2, fillPaint);
             }
         }
     };
@@ -208,36 +208,10 @@ public class EvaluationActivity extends AppCompatActivity {
                 return;
             }
             Toast.makeText(EvaluationActivity.this, "Loaded Classifier", Toast.LENGTH_SHORT).show();
-            mBtClassifier = (BluetoothLocationClassifier) data[0];
-            mWifiClassifier = (WifiLocationClassifier) data[1];
-            new AsyncTask<Void, Void, Void>(){
-                @Override
-                protected Void doInBackground(Void... params) {
-                    mTestClassifier = new TestClassifier();
-                    SampleList samples = SampleList.loadFromCsv(BT_TRAINING_CSV, WIFI_TRAINING_CSV);
-                    List<Point[]> testTrainingDate = new ArrayList<>();
-                    try {
-                        for (Sample sample : samples) {
-                            Point btPos = mBtClassifier.estimatePosition(sample.getBtBeaconList());
-                            Point wifiPos = mWifiClassifier.estimatePosition(sample.getWifiBeaconList());
-//                            Point wifiPos = Triangulation.calc(sample.getBtBeaconList());
-                            testTrainingDate.add(new Point[]{btPos, wifiPos, sample.getPosition()});
-                        }
-                        Log.d(TAG, "Start Build Test Classifier");
-                        mTestClassifier.buildClassifier(testTrainingDate);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    evaluate();
-                    return null;
-                }
-
-                @Override
-                protected void onPostExecute(Void aVoid) {
-                    super.onPostExecute(aVoid);
-                    mIntensityMap.invalidate();
-                }
-            }.execute();
+            mBtClassifier = (BtClassifier) data[0];
+            mWifiClassifier = (WifiClassifier) data[1];
+            mBothClassifier = (BtAndWifiClassifier) data[2];
+            evaluate();
         }
 
         @Override
