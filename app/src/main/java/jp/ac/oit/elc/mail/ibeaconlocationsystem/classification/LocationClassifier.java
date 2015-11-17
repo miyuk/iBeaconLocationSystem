@@ -12,7 +12,6 @@ import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothBeacon;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;
 import weka.classifiers.bayes.BayesNet;
 import weka.classifiers.bayes.NaiveBayes;
-import weka.classifiers.functions.MultilayerPerceptron;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instance;
@@ -22,7 +21,7 @@ import weka.core.Utils;
 /**
  * Created by yuuki on 10/20/15.
  */
-public abstract class LocationClassifier extends BayesNet {
+public abstract class LocationClassifier extends NaiveBayes {
     private static final String TAG = LocationClassifier.class.getSimpleName();
 
     protected static final int INSTANCES_CAPACITY = 1000;
@@ -67,7 +66,7 @@ public abstract class LocationClassifier extends BayesNet {
         return result;
     }
 
-    public Point estimatePosition(BeaconList<BluetoothBeacon> btBeacons, BeaconList<WifiBeacon> wifiBeacons) throws Exception{
+    public Point estimatePosition(BeaconList<BluetoothBeacon> btBeacons, BeaconList<WifiBeacon> wifiBeacons) throws Exception {
         Instance instance = makeInstance(btBeacons, wifiBeacons, null);
         return estimatePosition(instance);
     }
@@ -83,12 +82,22 @@ public abstract class LocationClassifier extends BayesNet {
         return new Point((int) Math.round(x), (int) Math.round(y));
     }
 
+    public Point decidePosition(BeaconList<BluetoothBeacon> btBeacons, BeaconList<WifiBeacon> wifiBeacons) throws Exception {
+        Instance instance = makeInstance(btBeacons, wifiBeacons, null);
+        return decidePosition(instance);
+    }
+
+    public Point decidePosition(Instance instance) throws Exception {
+        int valIndex = (int) classifyInstance(instance);
+        return parsePosition(m_Instances.classAttribute().value(valIndex));
+    }
+
     protected Instance makeInstance(BeaconList<BluetoothBeacon> btBeacons, BeaconList<WifiBeacon> wifiBeacons, Point position) {
         double[] values = new double[m_Instances.numAttributes()];
         for (int i = 0; i < values.length; i++) {
             values[i] = 0.0;
         }
-        if(btBeacons != null) {
+        if (btBeacons != null) {
             for (BluetoothBeacon beacon : btBeacons) {
                 Attribute attr = m_Instances.attribute("BT:" + beacon.getMacAddress());
                 if (attr != null) {
@@ -96,7 +105,7 @@ public abstract class LocationClassifier extends BayesNet {
                 }
             }
         }
-        if(wifiBeacons != null) {
+        if (wifiBeacons != null) {
             for (WifiBeacon beacon : wifiBeacons) {
                 Attribute attr = m_Instances.attribute("WIFI:" + beacon.getMacAddress());
                 if (attr != null) {
@@ -117,6 +126,7 @@ public abstract class LocationClassifier extends BayesNet {
         result.setDataset(m_Instances);
         return result;
     }
+
     protected static double mapRssiValue(double rssi) {
         if (rssi < OUT_OF_RANGE_RSSI) {
             return 0.01;

@@ -90,9 +90,12 @@ public class EvaluationActivity extends AppCompatActivity {
             Point wifiPos;
             Point bothPos;
             try {
-                btPos = mBtClassifier.estimatePosition(sample.getBtBeaconList(), null);
-                wifiPos = mWifiClassifier.estimatePosition(null, sample.getWifiBeaconList());
-                bothPos = mBothClassifier.estimatePosition(sample.getBtBeaconList(), sample.getWifiBeaconList());
+//                btPos = mBtClassifier.estimatePosition(sample.getBtBeaconList(), null);
+//                wifiPos = mWifiClassifier.estimatePosition(null, sample.getWifiBeaconList());
+//                bothPos = mBothClassifier.estimatePosition(sample.getBtBeaconList(), sample.getWifiBeaconList());
+                btPos = mBtClassifier.decidePosition(sample.getBtBeaconList(), null);
+                wifiPos = mWifiClassifier.decidePosition(null, sample.getWifiBeaconList());
+                bothPos = mBothClassifier.decidePosition(sample.getBtBeaconList(), sample.getWifiBeaconList());
                 buffer.append(String.format("%d,%d,%d,%d,%d,%d,%d,%d\n",
                         sample.getPosition().x, sample.getPosition().y,
                         btPos.x, btPos.y,
@@ -103,7 +106,7 @@ public class EvaluationActivity extends AppCompatActivity {
                 Toast.makeText(this, "can't evaluate", Toast.LENGTH_SHORT).show();
                 return;
             }
-            Log.d(TAG, String.format("True:%s BT:%s Wifi:%s BT+Wifi", sample.getPosition(), btPos, wifiPos, bothPos));
+            Log.d(TAG, String.format("True:%s BT:%s Wifi:%s BT+Wifi:%s", sample.getPosition(), btPos, wifiPos, bothPos));
             mEstimatedPositionMap.put(sample.getPosition(), new Point[]{btPos, wifiPos, bothPos});
         }
         mEvaluated = true;
@@ -174,8 +177,10 @@ public class EvaluationActivity extends AppCompatActivity {
             if (!mEstimatedPositionMap.containsKey(mSelectedPosition)) {
                 return;
             }
-            Point calculated = mEstimatedPositionMap.get(mSelectedPosition)[2];
-            double dist = distance(mSelectedPosition.x, mSelectedPosition.y, calculated.x, calculated.y);
+            Point[] calculated = mEstimatedPositionMap.get(mSelectedPosition);
+            Log.d(TAG, String.format("True:%s BT:%s Wifi:%s BT+Wifi:%s", mSelectedPosition, calculated[0], calculated[1], calculated[2]));
+
+            double dist = distance(mSelectedPosition.x, mSelectedPosition.y, calculated[2].x, calculated[2].y);
             mTextError.setText(String.format("%.2fm(%.0fpx)", dist * 0.048, dist));
             mIntensityMap.invalidate();
         }

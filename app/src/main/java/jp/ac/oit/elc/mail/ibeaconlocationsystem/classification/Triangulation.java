@@ -19,7 +19,7 @@ public class Triangulation {
         for (BluetoothBeacon beacon : beacons) {
             Point pos = LocationDB.get(beacon.getMacAddress());
             if (pos != null) {
-                double rss = rssiToDistance(beacon.getRssi());
+                double rss = dbmToMillWatt(beacon.getRssi());
                 posMap.put(rss, pos);
                 sum_rss += rss;
             }
@@ -32,7 +32,11 @@ public class Triangulation {
         return new Point((int) x, (int) y);
     }
 
-    private static double rssiToDistance(double rssi) {
-        return Math.pow(10, -(rssi + 59.844) / 8.121);
+    private static double dbmToMillWatt(double dbm) {
+        return Math.pow(10, dbm / 10);
+    }
+
+    private static double millWattToDbm(double millWatt) {
+        return 10.0 * Math.log10(millWatt);
     }
 }
