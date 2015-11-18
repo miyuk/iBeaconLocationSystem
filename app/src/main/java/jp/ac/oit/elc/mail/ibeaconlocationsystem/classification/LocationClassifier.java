@@ -1,6 +1,8 @@
 package jp.ac.oit.elc.mail.ibeaconlocationsystem.classification;
 
 import android.graphics.Point;
+import android.location.Location;
+import android.util.Log;
 
 import java.util.ArrayList;
 
@@ -21,7 +23,7 @@ import weka.core.Utils;
 /**
  * Created by yuuki on 10/20/15.
  */
-public abstract class LocationClassifier extends NaiveBayes {
+public abstract class LocationClassifier extends BayesNet {
     private static final String TAG = LocationClassifier.class.getSimpleName();
 
     protected static final int INSTANCES_CAPACITY = 1000;
@@ -54,13 +56,13 @@ public abstract class LocationClassifier extends NaiveBayes {
                     }
                 }
             }
-//            result.add(new Attribute("X"));
-//            result.add(new Attribute("Y"));
+
             String cat = formatPosition(sample.getPosition());
             if (!positions.contains(cat)) {
                 positions.add(cat);
             }
         }
+        result.add(new Attribute("ROOM"));
         Attribute classAttr = new Attribute("CLASS", positions);
         result.add(classAttr);
         return result;
@@ -94,6 +96,7 @@ public abstract class LocationClassifier extends NaiveBayes {
 
     protected Instance makeInstance(BeaconList<BluetoothBeacon> btBeacons, BeaconList<WifiBeacon> wifiBeacons, Point position) {
         double[] values = new double[m_Instances.numAttributes()];
+        int err = 0;
         for (int i = 0; i < values.length; i++) {
             values[i] = 0.0;
         }
@@ -113,13 +116,16 @@ public abstract class LocationClassifier extends NaiveBayes {
                 }
             }
         }
-//        Point pos = Triangulation.calc(btBeacons);
-//        values[m_Instances.attribute("X").index()] = pos.x / 1245.0;
-//        values[m_Instances.attribute("Y").index()] = pos.y / 1127.0;
+        Attribute roomAttr = m_Instances.attribute("ROOM");
         Attribute clsAttr = m_Instances.classAttribute();
         if (position == null) {
+            Point triPos = Triangulation.calc(btBeacons);
+            int roomId = LocationDB.mapRoom(triPos.x, triPos.y);
+            values[roomAttr.index()] = roomId;
             values[clsAttr.index()] = Utils.missingValue();
         } else {
+            int roomId = LocationDB.mapRoom(position.x, position.y);
+            values[roomAttr.index()] = roomId;
             values[clsAttr.index()] = clsAttr.indexOfValue(formatPosition(position));
         }
         Instance result = new DenseInstance(1.0, values);
@@ -147,5 +153,7 @@ public abstract class LocationClassifier extends NaiveBayes {
     protected static String formatPosition(Point position) {
         return String.format("%d-%d", position.x, position.y);
     }
-
+    protected static double calcDistance(double x1, double y1, double x2, double y2) {
+        return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+    }
 }
