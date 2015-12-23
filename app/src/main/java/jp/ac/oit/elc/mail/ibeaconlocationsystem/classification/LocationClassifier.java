@@ -23,7 +23,7 @@ import weka.core.Utils;
 /**
  * Created by yuuki on 10/20/15.
  */
-public abstract class LocationClassifier extends BayesNet {
+public abstract class LocationClassifier extends NaiveBayes {
     private static final String TAG = LocationClassifier.class.getSimpleName();
 
     protected static final int INSTANCES_CAPACITY = 1000;
