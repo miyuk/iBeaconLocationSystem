@@ -26,7 +26,7 @@ public class WifiClassifier extends LocationClassifier {
         m_Instances = new Instances("WIFI", attrs, INSTANCES_CAPACITY);
         m_Instances.setClass(m_Instances.attribute("CLASS"));
         for (Sample sample : trainingData) {
-            Instance instance = makeInstance(sample.getBtBeaconList(), sample.getWifiBeaconList(), sample.getPosition());
+            Instance instance = makeInstance(null, sample.getWifiBeaconList(), sample.getPosition());
             m_Instances.add(instance);
         }
     }

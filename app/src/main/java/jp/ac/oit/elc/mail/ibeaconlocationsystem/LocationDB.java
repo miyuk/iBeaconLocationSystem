@@ -3,21 +3,26 @@ package jp.ac.oit.elc.mail.ibeaconlocationsystem;
 import android.graphics.Point;
 import android.graphics.Rect;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by yuuki on 11/6/15.
  */
-public class LocationDB{
+public class LocationDB {
     private static Map<String, Point> sBeaconDb;
-    private static Map<Integer, Rect> sRoomDb;
-    static{
+    private static Map<String, Rect> sRoomDb;
+
+    static {
         sBeaconDb = new HashMap<>();
         sRoomDb = new HashMap<>();
         init();
     }
-    private static void init(){
+
+    private static void init() {
         sBeaconDb.put("B4:99:4C:4F:91:FC", new Point(1174, 968));
         sBeaconDb.put("B4:99:4C:4F:9F:A9", new Point(980, 1068));
         sBeaconDb.put("B4:99:4C:4F:8F:1F", new Point(1018, 970));
@@ -26,22 +31,32 @@ public class LocationDB{
         sBeaconDb.put("B4:99:4C:4F:91:9A", new Point(970, 724));
         sBeaconDb.put("B4:99:4C:4F:8F:16", new Point(1068, 748));
         sBeaconDb.put("B4:99:4C:4F:97:11", new Point(1180, 824));
-        sRoomDb.put(1, new Rect(919, 926, 1147, 1094));
-        sRoomDb.put(2, new Rect(1027, 695, 1225, 884));
+        sRoomDb.put("ROOM1", new Rect(919, 926, 1147, 1094));
+        sRoomDb.put("ROOM2", new Rect(1027, 695, 1225, 884));
     }
 
-    public static int mapRoom(int x, int y){
-        for (Map.Entry<Integer, Rect> entry : sRoomDb.entrySet()){
-            if (entry.getValue().contains(x, y)){
+    public static String mapRoom(int x, int y) {
+        for (Map.Entry<String, Rect> entry : sRoomDb.entrySet()) {
+            if (entry.getValue().contains(x, y)) {
                 return entry.getKey();
             }
         }
-        return 0;
+        return "OUT_OF_ROOMS";
     }
 
+    public static String mapRoom(Point pos) {
+        return mapRoom(pos.x, pos.y);
+    }
 
-    public static Point get(String mac){
-        if(!sBeaconDb.containsKey(mac)){
+    public static List<String> getRoomIds() {
+        List<String> result = new ArrayList(sRoomDb.keySet());
+        result.add("OUT_OF_ROOMS");
+        result.add("UNKNOWN");
+        return result;
+    }
+
+    public static Point get(String mac) {
+        if (!sBeaconDb.containsKey(mac)) {
             return null;
         }
         return sBeaconDb.get(mac);

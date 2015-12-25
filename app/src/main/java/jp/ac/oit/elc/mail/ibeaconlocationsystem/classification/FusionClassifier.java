@@ -18,10 +18,10 @@ import weka.core.Utils;
 /**
  * Created by yuuki on 11/12/15.
  */
-public class TestClassifier extends MultilayerPerceptron {
+public class FusionClassifier extends MultilayerPerceptron {
     private Instances m_Instances;
 
-    public void buildClassifier(List<Point[]> trainingData) throws Exception{
+    public void buildClassifier(List<Point[]> trainingData) throws Exception {
         ArrayList<Attribute> attrs = new ArrayList<>();
         attrs.add(new Attribute("BT_X"));
         attrs.add(new Attribute("BT_Y"));
@@ -34,9 +34,9 @@ public class TestClassifier extends MultilayerPerceptron {
                 clsAttrs.add(cat);
             }
         }
-        attrs.add(new Attribute("Class", clsAttrs));
-        m_Instances = new Instances("Test", attrs, 1000);
-        m_Instances.setClass(m_Instances.attribute("Class"));
+        attrs.add(new Attribute("CLASS", clsAttrs));
+        m_Instances = new Instances("FUSION", attrs, 1000);
+        m_Instances.setClass(m_Instances.attribute("CLASSØ"));
 
         for (Point[] points : trainingData) {
             m_Instances.add(makeInstance(points[0], points[1], points[2]));
@@ -60,16 +60,17 @@ public class TestClassifier extends MultilayerPerceptron {
         }
         return new Point((int) Math.round(x), (int) Math.round(y));
     }
-    public Instance makeInstance(Point btPos, Point wifiPos, Point truePos){
+
+    public Instance makeInstance(Point btPos, Point wifiPos, Point truePos) {
         double[] values = new double[m_Instances.numAttributes()];
         values[m_Instances.attribute("BT_X").index()] = btPos.x;
         values[m_Instances.attribute("BT_Y").index()] = btPos.x;
         values[m_Instances.attribute("WIFI_X").index()] = wifiPos.y;
         values[m_Instances.attribute("WIFI_Y").index()] = wifiPos.y;
         Attribute clsAttr = m_Instances.classAttribute();
-        if(truePos == null){
+        if (truePos == null) {
             values[clsAttr.index()] = Utils.missingValue();
-        }else {
+        } else {
             values[clsAttr.index()] = clsAttr.indexOfValue(formatPosition(truePos));
         }
         Instance instance = new DenseInstance(1.0, values);

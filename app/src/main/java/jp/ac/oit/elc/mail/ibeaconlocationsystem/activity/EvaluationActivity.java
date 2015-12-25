@@ -91,7 +91,7 @@ public class EvaluationActivity extends AppCompatActivity {
             Point bothPos;
             try {
                 btPos = mBtClassifier.estimatePosition(sample.getBtBeaconList(), sample.getWifiBeaconList());
-                wifiPos = mWifiClassifier.estimatePosition(sample.getBtBeaconList(), sample.getWifiBeaconList());
+                wifiPos = mWifiClassifier.estimatePosition(null, sample.getWifiBeaconList());
                 bothPos = mBothClassifier.estimatePosition(sample.getBtBeaconList(), sample.getWifiBeaconList());
 //                btPos = mBtClassifier.decidePosition(sample.getBtBeaconList(), sample.getWifiBeaconList());
 //                wifiPos = mWifiClassifier.decidePosition(sample.getBtBeaconList(), sample.getWifiBeaconList());
