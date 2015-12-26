@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by yuuki on 11/6/15.
@@ -35,7 +34,7 @@ public class LocationDB {
         sRoomDb.put("ROOM2", new Rect(1027, 695, 1225, 884));
     }
 
-    public static String mapRoom(int x, int y) {
+    public static String getRoomId(int x, int y) {
         for (Map.Entry<String, Rect> entry : sRoomDb.entrySet()) {
             if (entry.getValue().contains(x, y)) {
                 return entry.getKey();
@@ -44,8 +43,8 @@ public class LocationDB {
         return "OUT_OF_ROOMS";
     }
 
-    public static String mapRoom(Point pos) {
-        return mapRoom(pos.x, pos.y);
+    public static String getRoomId(Point pos) {
+        return getRoomId(pos.x, pos.y);
     }
 
     public static List<String> getRoomIds() {

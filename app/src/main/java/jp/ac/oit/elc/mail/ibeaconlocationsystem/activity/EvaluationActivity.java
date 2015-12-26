@@ -90,12 +90,12 @@ public class EvaluationActivity extends AppCompatActivity {
             Point wifiPos;
             Point bothPos;
             try {
-                btPos = mBtClassifier.estimatePosition(sample.getBtBeaconList(), sample.getWifiBeaconList());
-                wifiPos = mWifiClassifier.estimatePosition(null, sample.getWifiBeaconList());
-                bothPos = mBothClassifier.estimatePosition(sample.getBtBeaconList(), sample.getWifiBeaconList());
-//                btPos = mBtClassifier.decidePosition(sample.getBtBeaconList(), sample.getWifiBeaconList());
-//                wifiPos = mWifiClassifier.decidePosition(sample.getBtBeaconList(), sample.getWifiBeaconList());
-//                bothPos = mBothClassifier.decidePosition(sample.getBtBeaconList(), sample.getWifiBeaconList());
+                btPos = mBtClassifier.calcExpectedPosition(sample.getBtBeaconList(), sample.getWifiBeaconList());
+                wifiPos = mWifiClassifier.calcExpectedPosition(null, sample.getWifiBeaconList());
+                bothPos = mBothClassifier.calcExpectedPosition(sample.getBtBeaconList(), sample.getWifiBeaconList());
+//                btPos = mBtClassifier.classifyPosition(sample.getBtBeaconList(), sample.getWifiBeaconList());
+//                wifiPos = mWifiClassifier.classifyPosition(sample.getBtBeaconList(), sample.getWifiBeaconList());
+//                bothPos = mBothClassifier.classifyPosition(sample.getBtBeaconList(), sample.getWifiBeaconList());
                 buffer.append(String.format("%d,%d,%d,%d,%d,%d,%d,%d\n",
                         sample.getPosition().x, sample.getPosition().y,
                         btPos.x, btPos.y,

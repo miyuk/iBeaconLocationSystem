@@ -14,6 +14,10 @@ import weka.core.Instances;
 public class WifiClassifier extends LocationClassifier {
     private static final String TAG = WifiClassifier.class.getSimpleName();
 
+    public WifiClassifier(){
+        mEnabledBt = false;
+        mEnabledWifi = true;
+    }
     @Override
     public void buildClassifier(SampleList trainingData) throws Exception {
         initInstances(trainingData);
@@ -22,11 +26,11 @@ public class WifiClassifier extends LocationClassifier {
     }
 
     private void initInstances(SampleList trainingData) {
-        ArrayList<Attribute> attrs = extractAttributes(trainingData, false, true);
+        ArrayList<Attribute> attrs = extractAttributes(trainingData);
         m_Instances = new Instances("WIFI", attrs, INSTANCES_CAPACITY);
         m_Instances.setClass(m_Instances.attribute("CLASS"));
         for (Sample sample : trainingData) {
-            Instance instance = makeInstance(null, sample.getWifiBeaconList(), sample.getPosition());
+            Instance instance = makeInstance(sample);
             m_Instances.add(instance);
         }
     }

@@ -18,6 +18,10 @@ import weka.core.Instances;
 public class BtClassifier extends LocationClassifier {
     private static final String TAG = BtClassifier.class.getSimpleName();
 
+    public BtClassifier(){
+        mEnabledBt = true;
+        mEnabledWifi = false;
+    }
     @Override
     public void buildClassifier(SampleList trainingData) throws Exception {
         initInstances(trainingData);
@@ -26,19 +30,12 @@ public class BtClassifier extends LocationClassifier {
     }
 
     private void initInstances(SampleList trainingData) {
-        ArrayList<Attribute> attrs = extractAttributes(trainingData, true, false);
+        ArrayList<Attribute> attrs = extractAttributes(trainingData);
         m_Instances = new Instances("BT", attrs, INSTANCES_CAPACITY);
         m_Instances.setClass(m_Instances.attribute("CLASS"));
-        int err = 0;
         for (Sample sample : trainingData) {
-            Point triPos = Triangulation.calc(sample.getBtBeaconList());
-            if (LocationDB.mapRoom(triPos.x, triPos.y) != LocationDB.mapRoom(sample.getPosition().x, sample.getPosition().y)){
-                Log.d(TAG, String.format("False: %s <=> %s", sample.getPosition(), triPos));
-                err++;
-            }
-            Instance instance = makeInstance(sample.getBtBeaconList(), sample.getWifiBeaconList(), sample.getPosition());
+            Instance instance = makeInstance(sample);
             m_Instances.add(instance);
         }
-        Log.d(TAG, String.format("error rate is %.1f%%", 100.0 * err / trainingData.size()));
     }
 }

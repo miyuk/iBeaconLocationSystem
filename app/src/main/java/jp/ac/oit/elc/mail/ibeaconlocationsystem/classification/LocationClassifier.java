@@ -1,22 +1,15 @@
 package jp.ac.oit.elc.mail.ibeaconlocationsystem.classification;
 
 import android.graphics.Point;
-import android.location.Location;
-import android.util.Log;
 
-import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
-import jp.ac.oit.elc.mail.ibeaconlocationsystem.Beacon;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.BeaconList;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.LocationDB;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.Sample;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.SampleList;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothBeacon;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;
-import weka.classifiers.bayes.BayesNet;
 import weka.classifiers.bayes.NaiveBayes;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
@@ -36,12 +29,13 @@ public abstract class LocationClassifier extends NaiveBayes {
     protected static final double UPPER_RSSI = -0;
 
     protected Instances m_Instances;
-
-    protected ArrayList<Attribute> extractAttributes(SampleList trainingData, boolean enableBt, boolean enableWifi) {
+    protected boolean mEnabledBt = false;
+    protected boolean mEnabledWifi = false;
+    protected ArrayList<Attribute> extractAttributes(SampleList trainingData) {
         ArrayList<Attribute> result = new ArrayList<>();
         ArrayList<String> positions = new ArrayList<>();
         for (Sample sample : trainingData) {
-            if (enableBt) {
+            if (mEnabledBt) {
                 for (BluetoothBeacon beacon : sample.getBtBeaconList()) {
                     if (LocationDB.get(beacon.getMacAddress()) == null) {
                         continue;
@@ -53,7 +47,7 @@ public abstract class LocationClassifier extends NaiveBayes {
                 }
 
             }
-            if (enableWifi) {
+            if (mEnabledWifi) {
                 for (WifiBeacon beacon : sample.getWifiBeaconList()) {
                     Attribute attr = new Attribute("WIFI:" + beacon.getMacAddress());
                     if (!result.contains(attr)) {
@@ -68,7 +62,7 @@ public abstract class LocationClassifier extends NaiveBayes {
             }
         }
         //ROOM IDs
-        if (enableBt) {
+        if (mEnabledBt) {
             result.add(new Attribute("ROOM", LocationDB.getRoomIds()));
         }
         Attribute classAttr = new Attribute("CLASS", positions);
@@ -76,12 +70,12 @@ public abstract class LocationClassifier extends NaiveBayes {
         return result;
     }
 
-    public Point estimatePosition(BeaconList<BluetoothBeacon> btBeacons, BeaconList<WifiBeacon> wifiBeacons) throws Exception {
+    public Point calcExpectedPosition(BeaconList<BluetoothBeacon> btBeacons, BeaconList<WifiBeacon> wifiBeacons) throws Exception {
         Instance instance = makeInstance(btBeacons, wifiBeacons, null);
-        return estimatePosition(instance);
+        return calcExpectedPosition(instance);
     }
 
-    public Point estimatePosition(Instance instance) throws Exception {
+    public Point calcExpectedPosition(Instance instance) throws Exception {
         double[] pValues = distributionForInstance(instance);
         double x = 0, y = 0;
         for (int i = 0; i < pValues.length; i++) {
@@ -92,23 +86,25 @@ public abstract class LocationClassifier extends NaiveBayes {
         return new Point((int) Math.round(x), (int) Math.round(y));
     }
 
-    public Point decidePosition(BeaconList<BluetoothBeacon> btBeacons, BeaconList<WifiBeacon> wifiBeacons) throws Exception {
+    public Point classifyPosition(BeaconList<BluetoothBeacon> btBeacons, BeaconList<WifiBeacon> wifiBeacons) throws Exception {
         Instance instance = makeInstance(btBeacons, wifiBeacons, null);
-        return decidePosition(instance);
+        return classifyPosition(instance);
     }
 
-    public Point decidePosition(Instance instance) throws Exception {
+    public Point classifyPosition(Instance instance) throws Exception {
         int valIndex = (int) classifyInstance(instance);
         return parsePosition(m_Instances.classAttribute().value(valIndex));
     }
 
+    protected Instance makeInstance(Sample sample){
+        return makeInstance(sample.getBtBeaconList(), sample.getWifiBeaconList(), sample.getPosition());
+    }
     protected Instance makeInstance(BeaconList<BluetoothBeacon> btBeacons, BeaconList<WifiBeacon> wifiBeacons, Point position) {
         double[] values = new double[m_Instances.numAttributes()];
-        int err = 0;
         for (int i = 0; i < values.length; i++) {
             values[i] = 0.0;
         }
-        if (btBeacons != null) {
+        if (mEnabledBt) {
             BluetoothBeacon nearestBeacon = null;
             int maxRssi = -100;
             for (BluetoothBeacon beacon : btBeacons) {
@@ -123,15 +119,14 @@ public abstract class LocationClassifier extends NaiveBayes {
             }
             String roomId;
             if(nearestBeacon != null) {
-                roomId = LocationDB.mapRoom(nearestBeacon.getPosition());
-
+                roomId = LocationDB.getRoomId(nearestBeacon.getPosition());
             }else{
                 roomId = "UNKNOWN";
             }
             Attribute roomAttr = m_Instances.attribute("ROOM");
             values[roomAttr.index()] = roomAttr.indexOfValue(roomId);
         }
-        if (wifiBeacons != null) {
+        if (mEnabledWifi) {
             for (WifiBeacon beacon : wifiBeacons) {
                 Attribute attr = m_Instances.attribute("WIFI:" + beacon.getMacAddress());
                 if (attr != null) {
