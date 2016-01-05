@@ -15,6 +15,7 @@ public class WifiClassifier extends LocationClassifier {
     private static final String TAG = WifiClassifier.class.getSimpleName();
 
     public WifiClassifier(){
+        super();
         mEnabledBt = false;
         mEnabledWifi = true;
     }

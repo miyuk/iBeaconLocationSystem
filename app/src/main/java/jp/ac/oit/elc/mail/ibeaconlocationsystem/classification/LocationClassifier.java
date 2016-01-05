@@ -2,6 +2,8 @@ package jp.ac.oit.elc.mail.ibeaconlocationsystem.classification;
 
 import android.graphics.Point;
 
+import org.w3c.dom.Attr;
+
 import java.util.ArrayList;
 
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.BeaconList;
@@ -10,7 +12,9 @@ import jp.ac.oit.elc.mail.ibeaconlocationsystem.Sample;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.SampleList;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.bluetooth.BluetoothBeacon;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.wifi.WifiBeacon;
+import weka.classifiers.bayes.BayesNet;
 import weka.classifiers.bayes.NaiveBayes;
+import weka.classifiers.functions.MultilayerPerceptron;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instance;
@@ -28,19 +32,41 @@ public abstract class LocationClassifier extends NaiveBayes {
     protected static final double LOWER_RSSI = -100;
     protected static final double UPPER_RSSI = -0;
 
-    protected Instances m_Instances;
+    public Instances m_Instances;
     protected boolean mEnabledBt = false;
     protected boolean mEnabledWifi = false;
+    protected boolean mUsesNominalRssi = false;
+
+    public LocationClassifier(){
+        if((Object)this instanceof BayesNet) {
+            mUsesNominalRssi = true;
+        }
+    }
     protected ArrayList<Attribute> extractAttributes(SampleList trainingData) {
         ArrayList<Attribute> result = new ArrayList<>();
         ArrayList<String> positions = new ArrayList<>();
+        ArrayList<String> nominalRssis = new ArrayList<>();
+        if (mUsesNominalRssi) {
+            for (double i = LOWER_RSSI; i <= UPPER_RSSI; i += 1.0) {
+                String strRssi = nominalRssiValue(i);
+                if (!nominalRssis.contains(strRssi)) {
+                    nominalRssis.add(strRssi);
+                }
+            }
+            nominalRssis.add("MISSING");
+        }
         for (Sample sample : trainingData) {
             if (mEnabledBt) {
                 for (BluetoothBeacon beacon : sample.getBtBeaconList()) {
                     if (LocationDB.get(beacon.getMacAddress()) == null) {
                         continue;
                     }
-                    Attribute attr = new Attribute("BT:" + beacon.getMacAddress());
+                    Attribute attr;
+                    if (mUsesNominalRssi) {
+                        attr = new Attribute("BT:" + beacon.getMacAddress(), nominalRssis);
+                    } else {
+                        attr = new Attribute("BT:" + beacon.getMacAddress());
+                    }
                     if (!result.contains(attr)) {
                         result.add(attr);
                     }
@@ -49,7 +75,12 @@ public abstract class LocationClassifier extends NaiveBayes {
             }
             if (mEnabledWifi) {
                 for (WifiBeacon beacon : sample.getWifiBeaconList()) {
-                    Attribute attr = new Attribute("WIFI:" + beacon.getMacAddress());
+                    Attribute attr;
+                    if (mUsesNominalRssi) {
+                        attr = new Attribute("WIFI:" + beacon.getMacAddress(), nominalRssis);
+                    } else {
+                        attr = new Attribute("WIFI:" + beacon.getMacAddress());
+                    }
                     if (!result.contains(attr)) {
                         result.add(attr);
                     }
@@ -96,62 +127,100 @@ public abstract class LocationClassifier extends NaiveBayes {
         return parsePosition(m_Instances.classAttribute().value(valIndex));
     }
 
-    protected Instance makeInstance(Sample sample){
+    protected Instance makeInstance(Sample sample) {
         return makeInstance(sample.getBtBeaconList(), sample.getWifiBeaconList(), sample.getPosition());
     }
+
     protected Instance makeInstance(BeaconList<BluetoothBeacon> btBeacons, BeaconList<WifiBeacon> wifiBeacons, Point position) {
         double[] values = new double[m_Instances.numAttributes()];
-        for (int i = 0; i < values.length; i++) {
-            values[i] = 0.0;
-        }
+
+        ArrayList<Attribute> existedAttributes = new ArrayList<>();
         if (mEnabledBt) {
-            BluetoothBeacon nearestBeacon = null;
-            int maxRssi = -100;
             for (BluetoothBeacon beacon : btBeacons) {
                 Attribute attr = m_Instances.attribute("BT:" + beacon.getMacAddress());
                 if (attr != null) {
-                    if (beacon.getPosition() != null && beacon.getRssi() > maxRssi) {
-                        nearestBeacon = beacon;
-                        maxRssi = beacon.getRssi();
+                    existedAttributes.add(attr);
+                    if (mUsesNominalRssi) {
+                        values[attr.index()] = attr.indexOfValue(nominalRssiValue(beacon.getRssi()));
+                    } else {
+                        values[attr.index()] = mapRssiValue(beacon.getRssi());
                     }
-                    values[attr.index()] = mapRssiValue(beacon.getRssi());
                 }
             }
+            BluetoothBeacon nearestBeacon = findNearestBeacon(btBeacons);
             String roomId;
-            if(nearestBeacon != null) {
+            if (nearestBeacon != null) {
                 roomId = LocationDB.getRoomId(nearestBeacon.getPosition());
-            }else{
+            } else {
                 roomId = "UNKNOWN";
             }
             Attribute roomAttr = m_Instances.attribute("ROOM");
+            existedAttributes.add(roomAttr);
             values[roomAttr.index()] = roomAttr.indexOfValue(roomId);
         }
         if (mEnabledWifi) {
             for (WifiBeacon beacon : wifiBeacons) {
                 Attribute attr = m_Instances.attribute("WIFI:" + beacon.getMacAddress());
                 if (attr != null) {
-                    values[attr.index()] = mapRssiValue(beacon.getRssi());
+                    existedAttributes.add(attr);
+                    if (mUsesNominalRssi) {
+                        values[attr.index()] = attr.indexOfValue(nominalRssiValue(beacon.getRssi()));
+                    } else {
+                        values[attr.index()] = mapRssiValue(beacon.getRssi());
+                    }
                 }
             }
         }
         Attribute clsAttr = m_Instances.classAttribute();
+        existedAttributes.add(clsAttr);
         if (position == null) {
             values[clsAttr.index()] = Utils.missingValue();
         } else {
             values[clsAttr.index()] = clsAttr.indexOfValue(formatPosition(position));
+        }
+        for (int i = 0; i < values.length; i++) {
+            Attribute attr = m_Instances.attribute(i);
+            if (existedAttributes.contains(attr)) {
+                continue;
+            }
+            if (mUsesNominalRssi) {
+                values[i] = attr.indexOfValue("MISSING");
+            } else {
+                values[i] = 0.0;
+            }
         }
         Instance result = new DenseInstance(1.0, values);
         result.setDataset(m_Instances);
         return result;
     }
 
+    protected static BluetoothBeacon findNearestBeacon(BeaconList<BluetoothBeacon> beacons) {
+        BluetoothBeacon result = null;
+        int maxRssi = -100;
+        for (BluetoothBeacon beacon : beacons) {
+            if (beacon.getPosition() != null && beacon.getRssi() > maxRssi) {
+                result = beacon;
+                maxRssi = beacon.getRssi();
+            }
+        }
+        return result;
+    }
+
     protected static double mapRssiValue(double rssi) {
         if (rssi < OUT_OF_RANGE_RSSI) {
-            return 0.01;
+            return 0;
         }
         return (rssi - LOWER_RSSI) / (UPPER_RSSI - LOWER_RSSI);
     }
 
+    protected static String nominalRssiValue(double rssi) {
+        if (rssi < OUT_OF_RANGE_RSSI){
+            return "OUT_OF_RANGE";
+        }
+        double round = 10;
+        double roundedRssi = Math.ceil(rssi / round) * round;
+        return String.format("%d~%d", (int)roundedRssi, (int)(roundedRssi + round));
+    }
 
     public abstract void buildClassifier(SampleList trainingData) throws Exception;
 

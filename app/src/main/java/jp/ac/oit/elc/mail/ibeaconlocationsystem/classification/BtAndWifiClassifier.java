@@ -20,6 +20,7 @@ public class BtAndWifiClassifier extends LocationClassifier {
     private static final String TAG = BtAndWifiClassifier.class.getSimpleName();
 
     public BtAndWifiClassifier(){
+        super();
         mEnabledBt = true;
         mEnabledWifi = true;
     }

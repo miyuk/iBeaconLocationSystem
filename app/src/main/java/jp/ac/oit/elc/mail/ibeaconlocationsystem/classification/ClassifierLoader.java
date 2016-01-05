@@ -30,10 +30,13 @@ public class ClassifierLoader extends AsyncTaskLoader<LocationClassifier[]> {
         try {
             Log.d(TAG, "Loading BT Classifier");
             result[0].buildClassifier(samples);
+            System.out.println(result[0].m_Instances);
             Log.d(TAG, "Loading WIFI Classifier");
             result[1].buildClassifier(samples);
+            System.out.println(result[1].m_Instances);
             Log.d(TAG, "Loading BT and WIFI Classifier");
             result[2].buildClassifier(samples);
+            System.out.println(result[2].m_Instances);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
