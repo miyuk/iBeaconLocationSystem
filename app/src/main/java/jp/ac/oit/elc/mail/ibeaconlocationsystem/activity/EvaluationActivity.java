@@ -29,9 +29,10 @@ import jp.ac.oit.elc.mail.ibeaconlocationsystem.SampleList;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.classification.BtAndWifiClassifier;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.classification.BtClassifier;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.classification.ClassifierLoader;
-import jp.ac.oit.elc.mail.ibeaconlocationsystem.classification.LocationClassifier;
+import jp.ac.oit.elc.mail.ibeaconlocationsystem.classification.FusionClassifier;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.classification.WifiClassifier;
 import jp.ac.oit.elc.mail.ibeaconlocationsystem.view.IntensityMapView;
+import weka.classifiers.Classifier;
 
 import static jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment.APP_DIR;
 import static jp.ac.oit.elc.mail.ibeaconlocationsystem.Environment.BT_EVALUATION_CSV;
@@ -50,7 +51,8 @@ public class EvaluationActivity extends AppCompatActivity {
     private SampleList mEvalData;
     private BtClassifier mBtClassifier;
     private WifiClassifier mWifiClassifier;
-    private BtAndWifiClassifier mBothClassifier;
+    private BtAndWifiClassifier mBtAndWifiClassifier;
+    private FusionClassifier mFusionClassifier;
     private Map<Point, Point[]> mEstimatedPositionMap;
     private Point mSelectedPosition;
     private boolean mEvaluated;
@@ -88,26 +90,31 @@ public class EvaluationActivity extends AppCompatActivity {
         for (Sample sample : mEvalData) {
             Point btPos;
             Point wifiPos;
-            Point bothPos;
+            Point btAndWifiPos;
+            Point fusionPos;
             try {
                 btPos = mBtClassifier.calcExpectedPosition(sample.getBtBeaconList(), sample.getWifiBeaconList());
-                wifiPos = mWifiClassifier.calcExpectedPosition(null, sample.getWifiBeaconList());
-                bothPos = mBothClassifier.calcExpectedPosition(sample.getBtBeaconList(), sample.getWifiBeaconList());
+                wifiPos = mWifiClassifier.calcExpectedPosition(sample.getBtBeaconList(), sample.getWifiBeaconList());
+                btAndWifiPos = mBtAndWifiClassifier.calcExpectedPosition(sample.getBtBeaconList(), sample.getWifiBeaconList());
+//                fusionPos = mFusionClassifier.calcExpectedPosition(sample.getBtBeaconList(), sample.getWifiBeaconList());
 //                btPos = mBtClassifier.classifyPosition(sample.getBtBeaconList(), sample.getWifiBeaconList());
 //                wifiPos = mWifiClassifier.classifyPosition(sample.getBtBeaconList(), sample.getWifiBeaconList());
-//                bothPos = mBothClassifier.classifyPosition(sample.getBtBeaconList(), sample.getWifiBeaconList());
-                buffer.append(String.format("%d,%d,%d,%d,%d,%d,%d,%d\n",
+//                btAndWifiPos = mBtAndWifiClassifier.classifyPosition(sample.getBtBeaconList(), sample.getWifiBeaconList());
+                fusionPos = mFusionClassifier.classifyPosition(sample.getBtBeaconList(), sample.getWifiBeaconList());
+
+                buffer.append(String.format("%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
                         sample.getPosition().x, sample.getPosition().y,
                         btPos.x, btPos.y,
                         wifiPos.x, wifiPos.y,
-                        bothPos.x, bothPos.y));
+                        btAndWifiPos.x, btAndWifiPos.y,
+                        fusionPos.x, fusionPos.y));
             } catch (Exception e) {
                 e.printStackTrace();
                 Toast.makeText(this, "can't evaluate", Toast.LENGTH_SHORT).show();
                 return;
             }
-            Log.d(TAG, String.format("True:%s BT:%s Wifi:%s BT+Wifi:%s", sample.getPosition(), btPos, wifiPos, bothPos));
-            mEstimatedPositionMap.put(sample.getPosition(), new Point[]{btPos, wifiPos, bothPos});
+//            Log.d(TAG, String.format("True:%s BT:%s Wifi:%s BT+Wifi:%s FUSION:%s", sample.getPosition(), btPos, wifiPos, btAndWifiPos, fusionPos));
+            mEstimatedPositionMap.put(sample.getPosition(), new Point[]{btPos, wifiPos, btAndWifiPos, fusionPos});
         }
         mEvaluated = true;
         mIntensityMap.invalidate();
@@ -140,7 +147,8 @@ public class EvaluationActivity extends AppCompatActivity {
                 Point truePos = mIntensityMap.imageToScreenCoord(entry.getKey());
                 Point btPos = mIntensityMap.imageToScreenCoord(entry.getValue()[0]);
                 Point wifiPos = mIntensityMap.imageToScreenCoord(entry.getValue()[1]);
-                Point bothPos = mIntensityMap.imageToScreenCoord(entry.getValue()[2]);
+                Point btAndWifiPos = mIntensityMap.imageToScreenCoord(entry.getValue()[2]);
+                Point fusionPos = mIntensityMap.imageToScreenCoord(entry    .getValue()[3]);
                 Paint strokePaint = new Paint();
                 Paint fillPaint = new Paint();
                 strokePaint.setStyle(Paint.Style.STROKE);
@@ -162,8 +170,12 @@ public class EvaluationActivity extends AppCompatActivity {
                 canvas.drawCircle(wifiPos.x, wifiPos.y, width * 2, fillPaint);
                 strokePaint.setARGB(alpha, 0, 0, 255);
                 fillPaint.setARGB(alpha, 0, 0, 255);
-                canvas.drawLine(truePos.x, truePos.y, bothPos.x, bothPos.y, strokePaint);
-                canvas.drawCircle(bothPos.x, bothPos.y, width * 2, fillPaint);
+                canvas.drawLine(truePos.x, truePos.y, btAndWifiPos.x, btAndWifiPos.y, strokePaint);
+                canvas.drawCircle(btAndWifiPos.x, btAndWifiPos.y, width * 2, fillPaint);
+                strokePaint.setARGB(alpha, 255, 255, 0);
+                fillPaint.setARGB(alpha, 255, 255, 0);
+                canvas.drawLine(truePos.x, truePos.y, fusionPos.x, fusionPos.y, strokePaint);
+                canvas.drawCircle(fusionPos.x, fusionPos.y, width * 2, fillPaint);
                 strokePaint.setARGB(alpha, 0, 0, 0);
                 fillPaint.setARGB(alpha, 0, 0, 0);
                 canvas.drawCircle(truePos.x, truePos.y, width * 2, fillPaint);
@@ -178,9 +190,9 @@ public class EvaluationActivity extends AppCompatActivity {
                 return;
             }
             Point[] calculated = mEstimatedPositionMap.get(mSelectedPosition);
-            Log.d(TAG, String.format("True:%s BT:%s Wifi:%s BT+Wifi:%s", mSelectedPosition, calculated[0], calculated[1], calculated[2]));
+            Log.d(TAG, String.format("True:%s BT:%s Wifi:%s BT+Wifi:%s FUSION:%s", mSelectedPosition, calculated[0], calculated[1], calculated[2], calculated[3]));
 
-            double dist = distance(mSelectedPosition.x, mSelectedPosition.y, calculated[2].x, calculated[2].y);
+            double dist = distance(mSelectedPosition.x, mSelectedPosition.y, calculated[3].x, calculated[3].y);
             mTextError.setText(String.format("%.2fm(%.0fpx)", dist * 0.048, dist));
             mIntensityMap.invalidate();
         }
@@ -190,11 +202,11 @@ public class EvaluationActivity extends AppCompatActivity {
         }
     };
 
-    private LoaderManager.LoaderCallbacks<LocationClassifier[]> mClassifierLoadCallback = new LoaderManager.LoaderCallbacks<LocationClassifier[]>() {
+    private LoaderManager.LoaderCallbacks<Classifier[]> mClassifierLoadCallback = new LoaderManager.LoaderCallbacks<Classifier[]>() {
         ProgressDialog dialog;
 
         @Override
-        public Loader<LocationClassifier[]> onCreateLoader(int id, Bundle args) {
+        public Loader<Classifier[]> onCreateLoader(int id, Bundle args) {
             dialog = new ProgressDialog(EvaluationActivity.this);
             dialog.setMessage("Load Classifier");
             dialog.setCancelable(false);
@@ -206,7 +218,7 @@ public class EvaluationActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onLoadFinished(Loader<LocationClassifier[]> loader, LocationClassifier[] data) {
+        public void onLoadFinished(Loader<Classifier[]> loader, Classifier[] data) {
             dialog.dismiss();
             if (data == null) {
                 Toast.makeText(EvaluationActivity.this, "can't load Classifier", Toast.LENGTH_SHORT).show();
@@ -215,12 +227,13 @@ public class EvaluationActivity extends AppCompatActivity {
             Toast.makeText(EvaluationActivity.this, "Loaded Classifier", Toast.LENGTH_SHORT).show();
             mBtClassifier = (BtClassifier) data[0];
             mWifiClassifier = (WifiClassifier) data[1];
-            mBothClassifier = (BtAndWifiClassifier) data[2];
+            mBtAndWifiClassifier = (BtAndWifiClassifier) data[2];
+            mFusionClassifier = (FusionClassifier)data[3];
             evaluate();
         }
 
         @Override
-        public void onLoaderReset(Loader<LocationClassifier[]> loader) {
+        public void onLoaderReset(Loader<Classifier[]> loader) {
         }
     };
 

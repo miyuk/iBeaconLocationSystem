@@ -24,7 +24,7 @@ import weka.core.Utils;
 /**
  * Created by yuuki on 10/20/15.
  */
-public abstract class LocationClassifier extends NaiveBayes {
+public abstract class LocationClassifier extends BayesNet {
     private static final String TAG = LocationClassifier.class.getSimpleName();
 
     protected static final int INSTANCES_CAPACITY = 1000;
@@ -36,12 +36,15 @@ public abstract class LocationClassifier extends NaiveBayes {
     protected boolean mEnabledBt = false;
     protected boolean mEnabledWifi = false;
     protected boolean mUsesNominalRssi = false;
+    protected boolean mUsesRoomId = false;
 
     public LocationClassifier(){
         if((Object)this instanceof BayesNet) {
             mUsesNominalRssi = true;
         }
+        mUsesRoomId = false;
     }
+
     protected ArrayList<Attribute> extractAttributes(SampleList trainingData) {
         ArrayList<Attribute> result = new ArrayList<>();
         ArrayList<String> positions = new ArrayList<>();
@@ -93,7 +96,7 @@ public abstract class LocationClassifier extends NaiveBayes {
             }
         }
         //ROOM IDs
-        if (mEnabledBt) {
+        if (mEnabledBt && mUsesRoomId) {
             result.add(new Attribute("ROOM", LocationDB.getRoomIds()));
         }
         Attribute classAttr = new Attribute("CLASS", positions);
@@ -147,16 +150,18 @@ public abstract class LocationClassifier extends NaiveBayes {
                     }
                 }
             }
-            BluetoothBeacon nearestBeacon = findNearestBeacon(btBeacons);
-            String roomId;
-            if (nearestBeacon != null) {
-                roomId = LocationDB.getRoomId(nearestBeacon.getPosition());
-            } else {
-                roomId = "UNKNOWN";
+            if (mUsesRoomId) {
+                BluetoothBeacon nearestBeacon = findNearestBeacon(btBeacons);
+                String roomId;
+                if (nearestBeacon != null) {
+                    roomId = LocationDB.getRoomId(nearestBeacon.getPosition());
+                } else {
+                    roomId = "UNKNOWN";
+                }
+                Attribute roomAttr = m_Instances.attribute("ROOM");
+                existedAttributes.add(roomAttr);
+                values[roomAttr.index()] = roomAttr.indexOfValue(roomId);
             }
-            Attribute roomAttr = m_Instances.attribute("ROOM");
-            existedAttributes.add(roomAttr);
-            values[roomAttr.index()] = roomAttr.indexOfValue(roomId);
         }
         if (mEnabledWifi) {
             for (WifiBeacon beacon : wifiBeacons) {
@@ -214,12 +219,12 @@ public abstract class LocationClassifier extends NaiveBayes {
     }
 
     protected static String nominalRssiValue(double rssi) {
-        if (rssi < OUT_OF_RANGE_RSSI){
-            return "OUT_OF_RANGE";
-        }
+//        if (rssi < OUT_OF_RANGE_RSSI){
+//            return "OUT_OF_RANGE";
+//        }
         double round = 10;
         double roundedRssi = Math.ceil(rssi / round) * round;
-        return String.format("%d~%d", (int)roundedRssi, (int)(roundedRssi + round));
+        return String.format("%d~%d", (int)roundedRssi, (int)(roundedRssi + round - 1));
     }
 
     public abstract void buildClassifier(SampleList trainingData) throws Exception;
